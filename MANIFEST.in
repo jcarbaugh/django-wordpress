@@ -1,0 +1,4 @@
+include LICENSE
+include README.markdown
+recursive-include wordpress *.py
+recursive-include wordpress/templates *.html

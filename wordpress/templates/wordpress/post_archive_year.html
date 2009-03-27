@@ -1,0 +1,5 @@
+<ol>
+	{% for date in date_list %}
+		<li><a href="{% url wp_archive_month date.year,date.month %}">{{ date|date:"F" }}</a></li>
+	{% endfor %}
+</ol>
