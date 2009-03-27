@@ -39,14 +39,14 @@ which will install the application into python's site-packages directory.
 
 Add to INSTALLED_APPS:
 
-    wordpress
+    'wordpress'
 
 
 ### urls.py
 
 Include the following in urls.py.
 
-    url(r'^path/to/blog/', include('')),
+    url(r'^path/to/blog/', include('wordpress.urls')),
 
 
 ## Help!
