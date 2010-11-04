@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db import connection, models
+from django.db import connections, models
 from django.db.models import signals
 from django.http import HttpResponseRedirect
 import re
@@ -154,11 +154,12 @@ class PostManager(models.Manager):
     def published(self, post_type='post'):
         return self._by_status('publish', post_type)
         
-    def term(self, term, taxonomy='post_tag'):    
+    def term(self, term, taxonomy='post_tag'):
+        term = term.replace('-', ' ')
         tx = Taxonomy.objects.get(name=taxonomy, term__name=term)
         table = '%s_term_relationships' % TABLE_PREFIX
         sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id = %s"""
-        cursor = connection.cursor()
+        cursor = connections['wordpress'].cursor()
         cursor.execute(sql, [tx.pk,])
         pids = [row[0] for row in cursor.fetchall()]
         return Post.objects.published().filter(pk__in=pids)
@@ -223,7 +224,6 @@ class Post(WordPressModel):
         month = self.post_date.month
         day = self.post_date.day
         slug = self.slug
-        print reverse('wp_object_detail', args=(year, month, day, slug))
         return reverse('wp_object_detail', args=(year, month, day, slug))
         
     """   
@@ -244,6 +244,7 @@ class Post(WordPressModel):
     """ 
      
     def tags(self):
+        print self.get_absolute_url()
         if not self.tag_cache:
             taxonomy = "post_tag"
             self.tag_cache = self._get_terms(taxonomy)
@@ -252,7 +253,7 @@ class Post(WordPressModel):
     def _get_terms(self, taxonomy):
         table = '%s_term_relationships' % TABLE_PREFIX
         sql = """SELECT term_taxonomy_id FROM """ + table + """ WHERE object_id = %s ORDER BY term_order"""
-        cursor = connection.cursor()
+        cursor = connections['wordpress'].cursor()
         cursor.execute(sql, [self.id,])
         ttids = [row[0] for row in cursor.fetchall()]
         return Term.objects.filter(taxonomies__name=taxonomy, taxonomies__pk__in=ttids)
