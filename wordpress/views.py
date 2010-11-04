@@ -15,7 +15,8 @@ TAXONOMIES = {
 def object_detail(request, year, month, day, slug):
     return date_based.object_detail(request, queryset=Post.objects.published(),
         date_field='post_date', year=year, month=month, month_format="%m",
-        day=day, slug=slug, template_object_name='post', allow_future=True)
+        day=day, slug=slug, template_object_name='post', allow_future=True,
+        extra_context={'post_url': request.build_absolute_uri(request.path)})
     
 def archive_day(request, year, month, day):
     return date_based.archive_day(request, queryset=Post.objects.published(),
