@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.views.generic import list_detail, date_based
 from wordpress.models import Post
+import urllib
 
 PER_PAGE = getattr(settings, 'WP_PER_PAGE', 10)
 
@@ -13,6 +14,7 @@ TAXONOMIES = {
 }
  
 def object_detail(request, year, month, day, slug):
+    slug = urllib.quote(slug.encode('utf-8')).lower()
     return date_based.object_detail(request, queryset=Post.objects.published(),
         date_field='post_date', year=year, month=month, month_format="%m",
         day=day, slug=slug, template_object_name='post', allow_future=True,
