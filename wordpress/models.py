@@ -156,13 +156,16 @@ class PostManager(models.Manager):
         
     def term(self, term, taxonomy='post_tag'):
         term = term.replace('-', ' ')
-        tx = Taxonomy.objects.get(name=taxonomy, term__name=term)
-        table = '%s_term_relationships' % TABLE_PREFIX
-        sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id = %s"""
-        cursor = connections['wordpress'].cursor()
-        cursor.execute(sql, [tx.pk,])
-        pids = [row[0] for row in cursor.fetchall()]
-        return Post.objects.published().filter(pk__in=pids)
+        try:
+            tx = Taxonomy.objects.get(name=taxonomy, term__name=term)
+            table = '%s_term_relationships' % TABLE_PREFIX
+            sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id = %s"""
+            cursor = connections['wordpress'].cursor()
+            cursor.execute(sql, [tx.pk,])
+            pids = [row[0] for row in cursor.fetchall()]
+            return Post.objects.published().filter(pk__in=pids)
+        except Taxonomy.DoesNotExist:
+            return Post.objects.none()
     
 class Post(WordPressModel):
     """
