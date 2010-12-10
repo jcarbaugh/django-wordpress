@@ -224,8 +224,8 @@ class Post(WordPressModel):
         
     def get_absolute_url(self):
         year = self.post_date.year
-        month = self.post_date.month
-        day = self.post_date.day
+        month = "%02i" % self.post_date.month
+        day = "%02i" % self.post_date.day
         slug = self.slug
         return reverse('wp_object_detail', args=(year, month, day, slug))
         
