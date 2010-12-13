@@ -38,7 +38,7 @@ def archive_index(request):
     p = request.GET.get('p', None)
     if p:
         post = Post.objects.get(pk=p)
-        return HttpResponseRedirect(post.get_absolute_url())
+        return render_to_response('wordpress/post_detail.html', {'post': post})
     posts = Post.objects.published().select_related()
     return list_detail.object_list(request, queryset=posts,
         paginate_by=10, template_name='wordpress/post_archive.html',
