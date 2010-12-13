@@ -260,7 +260,7 @@ class Post(WordPressModel):
     
     @models.permalink
     def get_absolute_url(self):
-        return reverse('wp_object_detail', args=(
+        return ('wp_object_detail', (
             self.post_date.year,
             "%02i" % self.post_date.month,
             "%02i" % self.post_date.day,
