@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
 from django.views.generic import list_detail, date_based
 from wordpress.models import Post
 import urllib
@@ -12,6 +11,17 @@ TAXONOMIES = {
     'category': 'category',
     'link_category': 'link_category',
 }
+
+def preview(request, post_id):
+    return list_detail.object_detail(
+        request,
+        queryset=Post.objects.all(),
+        object_id=post_id,
+        template_object_name='post',
+        extra_context={
+            'preview': True,
+        }
+    )
  
 def object_detail(request, year, month, day, slug):
     slug = urllib.quote(slug.encode('utf-8')).lower()
@@ -37,8 +47,7 @@ def archive_year(request, year):
 def archive_index(request):
     p = request.GET.get('p', None)
     if p:
-        post = Post.objects.get(pk=p)
-        return render_to_response('wordpress/post_detail.html', {'post': post})
+        return preview(request, p)
     posts = Post.objects.published().select_related()
     return list_detail.object_list(request, queryset=posts,
         paginate_by=10, template_name='wordpress/post_archive.html',
