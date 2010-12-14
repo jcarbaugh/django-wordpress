@@ -81,7 +81,7 @@ class OptionManager(models.Manager):
         except Option.DoesNotExist:
             pass
 
-class Option(WordPressModel):
+class Option(models.Model):
     objects = OptionManager()
     
     id = models.IntegerField(db_column='option_id', primary_key=True)
@@ -209,8 +209,8 @@ class Post(WordPressModel):
     excerpt = models.TextField(db_column='post_excerpt')
     content = models.TextField(db_column='post_content')
     content_filtered = models.TextField(db_column='post_content_filtered')
-    post_date = models.DateTimeField(db_column='post_date_gmt')
-    modified = models.DateTimeField(db_column='post_modified_gmt')
+    post_date = models.DateTimeField(db_column='post_date')
+    modified = models.DateTimeField(db_column='post_modified')
     
     # comment stuff
     comment_status = models.CharField(max_length=20, choices=STATUS_CHOICES)
