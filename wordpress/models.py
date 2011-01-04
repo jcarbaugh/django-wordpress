@@ -181,11 +181,11 @@ class PostManager(models.Manager):
     def term(self, term, taxonomy='post_tag'):
         term = term.replace('-', ' ')
         try:
-            tx = Taxonomy.objects.get(name=taxonomy, term__name=term)
+            tx = Taxonomy.objects.filter(name=taxonomy, term__name=term)
             table = '%s_term_relationships' % TABLE_PREFIX
-            sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id = %s"""
+            sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id in (%s)""" % ",".join(str(t.pk) for t in tx)
             cursor = connections['wordpress'].cursor()
-            cursor.execute(sql, [tx.pk,])
+            cursor.execute(sql)
             pids = [row[0] for row in cursor.fetchall()]
             return Post.objects.published().filter(pk__in=pids)
         except Taxonomy.DoesNotExist:
@@ -266,9 +266,8 @@ class Post(WordPressModel):
             "%02i" % self.post_date.day,
             self.slug
         ))
-     
+    
     def tags(self):
-        print self.get_absolute_url()
         if not self.tag_cache:
             taxonomy = "post_tag"
             self.tag_cache = self._get_terms(taxonomy)
