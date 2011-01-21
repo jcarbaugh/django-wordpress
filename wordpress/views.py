@@ -12,6 +12,12 @@ TAXONOMIES = {
     'category': 'category',
     'link_category': 'link_category',
 }
+
+def author_list(request, username):
+    posts = Post.objects.filter(author__login=username)
+    return list_detail.object_list(request, queryset=posts,
+        paginate_by=PER_PAGE, template_name="wordpress/post_archive.html",
+        template_object_name="post", allow_empty=True)
  
 def object_detail(request, year, month, day, slug):
     slug = urllib.quote(slug.encode('utf-8')).lower()
@@ -41,7 +47,7 @@ def archive_index(request):
         return HttpResponseRedirect(post.get_absolute_url())
     posts = Post.objects.published().select_related()
     return list_detail.object_list(request, queryset=posts,
-        paginate_by=10, template_name='wordpress/post_archive.html',
+        paginate_by=PER_PAGE, template_name='wordpress/post_archive.html',
         template_object_name='post', allow_empty=True)
 
 def taxonomy(request, taxonomy, term):
@@ -49,6 +55,6 @@ def taxonomy(request, taxonomy, term):
     if taxonomy:
         posts = Post.objects.term(term, taxonomy=taxonomy).select_related()
         return list_detail.object_list(request, queryset=posts,
-            paginate_by=10, template_name='wordpress/post_term.html',
+            paginate_by=PER_PAGE, template_name='wordpress/post_term.html',
             template_object_name='post', allow_empty=True,
             extra_context={'term': term})
