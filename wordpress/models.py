@@ -59,10 +59,10 @@ class WordPressModel(models.Model):
         except model.DoesNotExist:
             pass
         
-    def save(self, override=False):
+    def save(self, override=False, **kwargs):
         if READ_ONLY and not override:
             raise WordPressException, "object is read-only"
-        super(WordPressModel, self).save()
+        super(WordPressModel, self).save(**kwargs)
         
     def delete(self, override=False):
         if READ_ONLY and not override:
@@ -72,6 +72,30 @@ class WordPressModel(models.Model):
 #
 # WordPress models
 #
+
+class OptionManager(models.Manager):
+    def get_value(self, name):
+        try:
+            o = Option.objects.get(name=name)
+            return o.value
+        except Option.DoesNotExist:
+            pass
+
+class Option(models.Model):
+    objects = OptionManager()
+    
+    id = models.IntegerField(db_column='option_id', primary_key=True)
+    blog_id = models.IntegerField()
+    name = models.CharField(max_length=64, db_column='option_name')
+    value = models.TextField(db_column='option_value')
+    autoload = models.CharField(max_length=20)
+    
+    class Meta:
+        db_table = '%s_options' % TABLE_PREFIX
+        ordering = ["name"]
+    
+    def __unicode__(self):
+        return u"%s: %s" % (self.name, self.value)
 
 class User(WordPressModel):
     """
@@ -156,13 +180,16 @@ class PostManager(models.Manager):
         
     def term(self, term, taxonomy='post_tag'):
         term = term.replace('-', ' ')
-        tx = Taxonomy.objects.get(name=taxonomy, term__name=term)
-        table = '%s_term_relationships' % TABLE_PREFIX
-        sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id = %s"""
-        cursor = connections['wordpress'].cursor()
-        cursor.execute(sql, [tx.pk,])
-        pids = [row[0] for row in cursor.fetchall()]
-        return Post.objects.published().filter(pk__in=pids)
+        try:
+            tx = Taxonomy.objects.filter(name=taxonomy, term__name=term)
+            table = '%s_term_relationships' % TABLE_PREFIX
+            sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id in (%s)""" % ",".join(str(t.pk) for t in tx)
+            cursor = connections['wordpress'].cursor()
+            cursor.execute(sql)
+            pids = [row[0] for row in cursor.fetchall()]
+            return Post.objects.published().filter(pk__in=pids)
+        except Taxonomy.DoesNotExist:
+            return Post.objects.none()
     
 class Post(WordPressModel):
     """
@@ -182,8 +209,8 @@ class Post(WordPressModel):
     excerpt = models.TextField(db_column='post_excerpt')
     content = models.TextField(db_column='post_content')
     content_filtered = models.TextField(db_column='post_content_filtered')
-    post_date = models.DateTimeField(db_column='post_date_gmt')
-    modified = models.DateTimeField(db_column='post_modified_gmt')
+    post_date = models.DateTimeField(db_column='post_date')
+    modified = models.DateTimeField(db_column='post_modified')
     
     # comment stuff
     comment_status = models.CharField(max_length=20, choices=STATUS_CHOICES)
@@ -218,33 +245,29 @@ class Post(WordPressModel):
             taxonomy = "category"
             self.category_cache = self._get_terms(taxonomy)
         return self.category_cache
-        
-    def get_absolute_url(self):
-        year = self.post_date.year
-        month = self.post_date.month
-        day = self.post_date.day
-        slug = self.slug
-        return reverse('wp_object_detail', args=(year, month, day, slug))
-        
-    """   
+    
+    def attachments(self):
+        for post in Post.objects.filter(post_type='attachment', parent=self):
+            yield {
+                'id': post.id,
+                'slug': post.slug,
+                'timestamp': post.post_date,
+                'description': post.content,
+                'title': post.title,
+                'guid': post.guid,
+                'mimetype': post.mime_type,
+            }
+    
     @models.permalink
     def get_absolute_url(self):
-        params = {
-            "year": self.post_date.year,
-            "month": self.post_date.month,
-            "day": self.post_date.day,
-            "slug": self.slug,
-        }
-        return ('wp_object_detail', (), params)
-    """
+        return ('wp_object_detail', (
+            self.post_date.year,
+            "%02i" % self.post_date.month,
+            "%02i" % self.post_date.day,
+            self.slug
+        ))
     
-    """
-    def parent(self):
-        return self._get_object(Post, self.parent_id)
-    """ 
-     
     def tags(self):
-        print self.get_absolute_url()
         if not self.tag_cache:
             taxonomy = "post_tag"
             self.tag_cache = self._get_terms(taxonomy)
