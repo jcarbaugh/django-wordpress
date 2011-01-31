@@ -13,7 +13,7 @@ TAXONOMIES = {
 }
 
 def author_list(request, username):
-    posts = Post.objects.filter(author__login=username)
+    posts = Post.objects.published().filter(author__login=username)
     return list_detail.object_list(request, queryset=posts,
         paginate_by=PER_PAGE, template_name="wordpress/post_archive.html",
         template_object_name="post", allow_empty=True)
