@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.views.generic import list_detail, date_based
 from wordpress.models import Post
+import datetime
 import urllib
 
 PER_PAGE = getattr(settings, 'WP_PER_PAGE', 10)
@@ -28,13 +30,24 @@ def preview(request, post_id):
             'preview': True,
         }
     )
- 
+
 def object_detail(request, year, month, day, slug):
     slug = urllib.quote(slug.encode('utf-8')).lower()
     return date_based.object_detail(request, queryset=Post.objects.published(),
         date_field='post_date', year=year, month=month, month_format="%m",
         day=day, slug=slug, template_object_name='post', allow_future=True,
         extra_context={'post_url': request.build_absolute_uri(request.path)})
+
+def object_attachment(request, year, month, day, post_slug, slug):
+    post_date = datetime.datetime.strptime("%s/%s/%s" % (year, month, day), "%Y/%m/%d")
+    post = get_object_or_404(Post.objects.published(),
+        post_date__year=post_date.year,
+        post_date__month=post_date.month,
+        post_date__day=post_date.day,
+        slug=urllib.quote(post_slug.encode('utf-8')).lower()
+    )
+    attachment = get_object_or_404(Post, post_type='attachment', slug=slug, parent=post)
+    return HttpResponseRedirect(attachment.guid)
     
 def archive_day(request, year, month, day):
     return date_based.archive_day(request, queryset=Post.objects.published(),
