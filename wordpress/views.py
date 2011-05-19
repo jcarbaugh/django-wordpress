@@ -79,4 +79,4 @@ def taxonomy(request, taxonomy, term):
         return list_detail.object_list(request, queryset=posts,
             paginate_by=PER_PAGE, template_name='wordpress/post_term.html',
             template_object_name='post', allow_empty=True,
-            extra_context={'term': term})
+            extra_context={taxonomy: term})
