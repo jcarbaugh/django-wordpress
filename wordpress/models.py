@@ -158,7 +158,7 @@ class Link(WordPressModel):
     name = models.CharField(max_length=255, db_column='link_name')
     image = models.CharField(max_length=255, db_column='link_image')
     target = models.CharField(max_length=25, db_column='link_target')
-    category_id = models.IntegerField(default=0, db_column='link_category')
+#    category_id = models.IntegerField(default=0, db_column='link_category')
     description = models.CharField(max_length=255, db_column='link_description')
     visible = models.CharField(max_length=20, db_column='link_visible')
     owner = models.ForeignKey(User, related_name='links', db_column='link_owner')
@@ -239,7 +239,7 @@ class Post(WordPressModel):
     
     # statuses
     password = models.CharField(max_length=20, db_column="post_password")
-    category_id = models.IntegerField(db_column='post_category')
+#    category_id = models.IntegerField(db_column='post_category')
     
     # other various lame fields
     parent = models.ForeignKey('self', related_name="children", db_column="post_parent", blank=True, null=True)
