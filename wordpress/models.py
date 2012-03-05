@@ -30,6 +30,7 @@ USER_STATUS_CHOICES = (
 
 READ_ONLY = getattr(settings, "WP_READ_ONLY", True)
 TABLE_PREFIX = getattr(settings, "WP_TABLE_PREFIX", "wp")
+DATABASE = getattr(settings, "WP_DATABASE", "default")
 
 #
 # Exceptions
@@ -42,16 +43,31 @@ class WordPressException(Exception):
     pass
 
 #
+# Base managers
+#
+class WordPressManager(models.Manager):
+    """
+    Sets the database for all queries.
+    """
+    def get_query_set(self, *args, **kwargs):
+        return super(WordPressManager, self).get_query_set(*args, **kwargs).using(DATABASE)
+
+
+#
 # Base models
 #
 
 class WordPressModel(models.Model):
     """
     Base model for all WordPress objects.
+    
     Overrides save and delete methods to enforce read-only setting.
+    Overrides self.objects to enforce WP_DATABASE setting.
     """
     class Meta:
         abstract = True
+
+    objects = WordPressManager()
 
     def _get_object(self, model, obj_id):
         try:
@@ -73,7 +89,7 @@ class WordPressModel(models.Model):
 # WordPress models
 #
 
-class OptionManager(models.Manager):
+class OptionManager(WordPressManager):
     def get_value(self, name):
         try:
             o = Option.objects.get(name=name)
@@ -81,7 +97,7 @@ class OptionManager(models.Manager):
         except Option.DoesNotExist:
             pass
 
-class Option(models.Model):
+class Option(WordPressModel):
     objects = OptionManager()
     
     id = models.IntegerField(db_column='option_id', primary_key=True)
@@ -161,7 +177,7 @@ class Link(WordPressModel):
     def is_visible(self):
         return self.visible == 'Y'
     
-class PostManager(models.Manager):
+class PostManager(WordPressManager):
     """
     Provides convenience methods for filtering posts by status.
     """
