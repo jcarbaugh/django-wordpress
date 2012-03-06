@@ -196,11 +196,11 @@ class PostManager(WordPressManager):
     def published(self, post_type='post'):
         return self._by_status('publish', post_type)
         
-    def term(self, term, taxonomy='post_tag'):
+    def term(self, terms, taxonomy='post_tag'):
         """
-        @arg term Can either be a string (name of the term) or an list of term names.
+        @arg terms Can either be a string (name of the term) or an list of term names.
         """
-        terms = term if isinstance(term, list) else [ term ]
+        terms = terms if isinstance(terms, list) else [ terms ]
         terms = [ term.replace('-', ' ') for term in terms ]
         
         try:
@@ -229,6 +229,8 @@ class Post(WordPressModel):
     """
     
     objects = PostManager()
+    
+    id = models.AutoField(primary_key = True, db_column = 'ID')
     
     # post data
     guid = models.CharField(max_length=255)
@@ -305,8 +307,8 @@ class Post(WordPressModel):
         return self.tag_cache
         
     def _get_terms(self, taxonomy):
-        tr = TermRelationship.objects.filter(object_id = self.id)
-        return Term.objects.filter(taxonomies__name = taxonomy, taxonomies__pk__in = [ obj.pk for obj in tr])
+        tr_pks = TermRelationship.objects.filter(object_id = self.id).values_list('term_taxonomy__pk', flat = True)
+        return Term.objects.filter(taxonomies__name = taxonomy, taxonomies__pk__in = tr_pks)
 
 class PostMeta(WordPressModel):
     """
