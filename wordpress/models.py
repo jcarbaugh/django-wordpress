@@ -1,9 +1,11 @@
+import re
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import connections, models
 from django.db.models import signals
 from django.http import HttpResponseRedirect
-import re
+
 
 STATUS_CHOICES = (
     ('closed', 'closed'),
@@ -195,18 +197,31 @@ class PostManager(WordPressManager):
         return self._by_status('publish', post_type)
         
     def term(self, term, taxonomy='post_tag'):
-        term = term.replace('-', ' ')
+        """
+        @arg term Can either be a string (name of the term) or an list of term names.
+        """
+        terms = term if isinstance(term, list) else [ term ]
+        terms = [ term.replace('-', ' ') for term in terms ]
+        
         try:
-            tx = Taxonomy.objects.filter(name=taxonomy, term__name=term)
-            table = '%s_term_relationships' % TABLE_PREFIX
-            sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id in (%s)""" % ",".join(str(t.pk) for t in tx)
-            cursor = connections['wordpress'].cursor()
-            cursor.execute(sql)
-            pids = [row[0] for row in cursor.fetchall()]
-            return Post.objects.published().filter(pk__in=pids)
+            tx = Taxonomy.objects.filter(name = taxonomy, term__name__in = terms)
+            post_ids = TermRelationships.objects.filter(term_taxonomy__in = tx).values_list('object_id', flat = True)
+            
+            return Post.objects.published().filter(pk__in = post_ids)
         except Taxonomy.DoesNotExist:
             return Post.objects.none()
-    
+
+
+class TermRelationships(WordPressModel):
+    class Meta:
+        db_table = '%s_term_relationships' % TABLE_PREFIX
+        ordering = [ 'order', ]
+
+    object_id = models.IntegerField()
+    term_taxonomy = models.ForeignKey('Taxonomy', db_column = 'term_taxonomy_id')
+    order = models.IntegerField(db_column = 'term_order')
+
+
 class Post(WordPressModel):
     """
     The mother lode.
@@ -290,13 +305,9 @@ class Post(WordPressModel):
         return self.tag_cache
         
     def _get_terms(self, taxonomy):
-        table = '%s_term_relationships' % TABLE_PREFIX
-        sql = """SELECT term_taxonomy_id FROM """ + table + """ WHERE object_id = %s ORDER BY term_order"""
-        cursor = connections['wordpress'].cursor()
-        cursor.execute(sql, [self.id,])
-        ttids = [row[0] for row in cursor.fetchall()]
-        return Term.objects.filter(taxonomies__name=taxonomy, taxonomies__pk__in=ttids)
-        
+        tr = TermRelationships.objects.filter(object_id = self.id)
+        return Term.objects.filter(taxonomies__name = taxonomy, taxonomies__pk__in = [ obj.pk for obj in tr])
+
 class PostMeta(WordPressModel):
     """
     Post meta data.
