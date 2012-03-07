@@ -387,6 +387,10 @@ class Term(WordPressModel):
 
     def __unicode__(self):
         return self.name
+    
+    @models.permalink
+    def get_absolute_url(self):
+        return ('wp_archive_term', (self.slug, ))
 
 class Taxonomy(WordPressModel):
     id = models.IntegerField(db_column='term_taxonomy_id', primary_key=True)
