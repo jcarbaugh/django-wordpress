@@ -16,7 +16,7 @@ All code is under a BSD-style license, see LICENSE for details.
 Source: http://github.com/sunlightlabs/django-wordpress/
 
 
-# Modifications by twig
+## Modifications by twig
 
 Disabled support for Link.category_id and Post.category_id (so it supports WordPress 3+)
 
