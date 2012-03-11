@@ -68,6 +68,7 @@ class WordPressModel(models.Model):
     """
     class Meta:
         abstract = True
+        managed = False
 
     objects = WordPressManager()
 
@@ -100,6 +101,11 @@ class OptionManager(WordPressManager):
             pass
 
 class Option(WordPressModel):
+    class Meta:
+        db_table = '%s_options' % TABLE_PREFIX
+        ordering = ["name"]
+        managed = False
+    
     objects = OptionManager()
     
     id = models.IntegerField(db_column='option_id', primary_key=True)
@@ -108,10 +114,6 @@ class Option(WordPressModel):
     value = models.TextField(db_column='option_value')
     autoload = models.CharField(max_length=20)
     
-    class Meta:
-        db_table = '%s_options' % TABLE_PREFIX
-        ordering = ["name"]
-    
     def __unicode__(self):
         return u"%s: %s" % (self.name, self.value)
 
@@ -119,6 +121,11 @@ class User(WordPressModel):
     """
     User object. Referenced by Posts, Comments, and Links
     """
+    class Meta:
+        db_table = '%s_users' % TABLE_PREFIX
+        ordering = ["display_name"]
+        managed = False
+
     login = models.CharField(max_length=60, db_column='user_login')
     password = models.CharField(max_length=64, db_column='user_pass')
     username = models.CharField(max_length=255, db_column='user_nicename')
@@ -129,10 +136,6 @@ class User(WordPressModel):
     status = models.IntegerField(default=0, choices=USER_STATUS_CHOICES, db_column='user_status')
     display_name = models.CharField(max_length=255, db_column='display_name')
 
-    class Meta:
-        db_table = '%s_users' % TABLE_PREFIX
-    	ordering = ["display_name"]
-    
     def __unicode__(self):
         return self.display_name
     
@@ -140,13 +143,14 @@ class UserMeta(WordPressModel):
     """
     Meta information about a user.
     """
+    class Meta:
+        db_table = '%s_usermeta' % TABLE_PREFIX
+        managed = False
+
     id = models.IntegerField(db_column='umeta_id', primary_key=True)
     user = models.ForeignKey(User, related_name="meta", db_column='user_id')
     key = models.CharField(max_length=255, db_column='meta_key')
     value = models.TextField(db_column='meta_value')
-    
-    class Meta:
-        db_table = '%s_usermeta' % TABLE_PREFIX
     
     def __unicode__(self):
         return u"%s: %s" % (self.key, self.value)
@@ -155,6 +159,10 @@ class Link(WordPressModel):
     """
     An external link.
     """
+    class Meta:
+        db_table = '%s_links' % TABLE_PREFIX
+        managed = False
+
     id = models.IntegerField(db_column='link_id', primary_key=True)
     url = models.URLField(max_length=255, verify_exists=False, db_column='link_url')
     name = models.CharField(max_length=255, db_column='link_name')
@@ -170,9 +178,6 @@ class Link(WordPressModel):
     notes = models.TextField(db_column='link_notes')
     rss = models.CharField(max_length=255, db_column='link_rss')
 
-    class Meta:
-        db_table = '%s_links' % TABLE_PREFIX
-
     def __unicode__(self):
         return u"%s %s" % (self.name, self.url)
     
@@ -183,7 +188,6 @@ class PostManager(WordPressManager):
     """
     Provides convenience methods for filtering posts by status.
     """
-    
     def _by_status(self, status, post_type='post'):
         return Post.objects.filter(status=status, post_type=post_type)
         
@@ -216,6 +220,7 @@ class TermRelationship(WordPressModel):
     class Meta:
         db_table = '%s_term_relationships' % TABLE_PREFIX
         ordering = [ 'order', ]
+        managed = False
 
     object_id = models.IntegerField()
     term_taxonomy = models.ForeignKey('Taxonomy', db_column = 'term_taxonomy_id')
@@ -227,6 +232,10 @@ class Post(WordPressModel):
     The mother lode.
     The WordPress post.
     """
+    class Meta:
+        db_table = '%s_posts' % TABLE_PREFIX
+        ordering = ["-post_date"]
+        managed = False
     
     objects = PostManager()
     
@@ -266,10 +275,6 @@ class Post(WordPressModel):
     category_cache = None
     tag_cache = None
 	
-    class Meta:
-    	db_table = '%s_posts' % TABLE_PREFIX
-    	ordering = ["-post_date"]
-    	
     def __unicode__(self):
         return self.title
         
@@ -314,13 +319,14 @@ class PostMeta(WordPressModel):
     """
     Post meta data.
     """
+    class Meta:
+        db_table = '%s_postmeta' % TABLE_PREFIX
+        managed = False
+
     id = models.IntegerField(db_column='meta_id', primary_key=True)
     post = models.ForeignKey(Post, related_name='meta', db_column='post_id')
     key = models.CharField(max_length=255, db_column='meta_key')
     value = models.TextField(db_column='meta_value')
-    
-    class Meta:
-        db_table = '%s_postmeta' % TABLE_PREFIX
     
     def __unicode__(self):
         return u"%s: %s" % (self.key, self.value)
@@ -329,6 +335,11 @@ class Comment(WordPressModel):
     """
     Comments to Posts.
     """
+    class Meta:
+        db_table = '%s_comments' % TABLE_PREFIX
+        ordering = ['-post_date']
+        managed = False
+
     id = models.IntegerField(db_column='comment_id', primary_key=True)
     post = models.ForeignKey(Post, related_name="comments", db_column="comment_post_id")
     user_id = models.IntegerField(db_column='user_id', default=0)
@@ -350,10 +361,6 @@ class Comment(WordPressModel):
     # other stuff
     agent = models.CharField(max_length=255, db_column='comment_agent')
     comment_type = models.CharField(max_length=20)
-    
-    class Meta:
-    	db_table = '%s_comments' % TABLE_PREFIX
-    	ordering = ['-post_date']
     	
     def __unicode__(self):
         return u"%s on %s" % (self.author_name, self.post.title)
@@ -376,14 +383,15 @@ class Comment(WordPressModel):
         return self.approved == 'spam'
 
 class Term(WordPressModel):
+    class Meta:
+        db_table = '%s_terms' % TABLE_PREFIX
+        ordering = ['name',]
+        managed = False
+    
     id = models.IntegerField(db_column='term_id', primary_key=True)
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
     group = models.IntegerField(default=0, db_column='term_group')
-
-    class Meta:
-        db_table = '%s_terms' % TABLE_PREFIX
-        ordering = ['name',]
 
     def __unicode__(self):
         return self.name
@@ -393,6 +401,11 @@ class Term(WordPressModel):
         return ('wp_archive_term', (self.slug, ))
 
 class Taxonomy(WordPressModel):
+    class Meta:
+        db_table = '%s_term_taxonomy' % TABLE_PREFIX
+        ordering = ['name',]
+        managed = False
+
     id = models.IntegerField(db_column='term_taxonomy_id', primary_key=True)
     term = models.ForeignKey(Term, related_name='taxonomies', blank=True, null=True)
     #term_id = models.IntegerField()
@@ -400,10 +413,6 @@ class Taxonomy(WordPressModel):
     description = models.TextField()
     parent_id = models.IntegerField(default=0, db_column='parent')
     count = models.IntegerField(default=0)
-
-    class Meta:
-        db_table = '%s_term_taxonomy' % TABLE_PREFIX
-        ordering = ['name',]
 
     def __unicode__(self):
         try:
