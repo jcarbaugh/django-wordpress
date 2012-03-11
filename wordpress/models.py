@@ -209,14 +209,14 @@ class PostManager(WordPressManager):
         
         try:
             tx = Taxonomy.objects.filter(name = taxonomy, term__name__in = terms)
-            post_ids = TermRelationship.objects.filter(term_taxonomy__in = tx).values_list('object_id', flat = True)
+            post_ids = TermTaxonomyRelationship.objects.filter(term_taxonomy__in = tx).values_list('object_id', flat = True)
             
             return Post.objects.published().filter(pk__in = post_ids)
         except Taxonomy.DoesNotExist:
             return Post.objects.none()
 
 
-class TermRelationship(WordPressModel):
+class TermTaxonomyRelationship(WordPressModel):
     class Meta:
         db_table = '%s_term_relationships' % TABLE_PREFIX
         ordering = [ 'order', ]
@@ -312,7 +312,7 @@ class Post(WordPressModel):
         return self.tag_cache
         
     def _get_terms(self, taxonomy):
-        tr_pks = TermRelationship.objects.filter(object_id = self.id).values_list('term_taxonomy__pk', flat = True)
+        tr_pks = TermTaxonomyRelationship.objects.filter(object_id = self.id).values_list('term_taxonomy__pk', flat = True)
         return Term.objects.filter(taxonomies__name = taxonomy, taxonomies__pk__in = tr_pks)
 
 class PostMeta(WordPressModel):
