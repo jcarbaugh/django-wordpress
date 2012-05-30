@@ -1,6 +1,6 @@
 # django-wordpress
 
-Models and views for reading a WordPress database. Compatible with WordPress version 2.6.1.
+Models and views for reading a WordPress database. Compatible with WordPress version 3.1.
 
 These models are meant to be read-only. Writing is enabled by adding *WP_READ_ONLY = False* to settings.py. None of the WordPress specific logic is included while writing to the database so there is a good chance you will break your WordPress install if you enable writing.
 
@@ -14,6 +14,21 @@ Writen by Jeremy Carbaugh <jcarbaugh@sunlightfoundation.com>
 All code is under a BSD-style license, see LICENSE for details.
 
 Source: http://github.com/sunlightlabs/django-wordpress/
+
+
+## Modifications by twig
+
+Disabled support for Link.category_id and Post.category_id (so it supports WordPress 3+)
+
+Added the ability to specify which database the wordpress content is coming from. Set it using the *WP_DATABASE* setting. Defaults to "default".
+
+Added mapping for TermTaxonomyRelationship so there is no more hand-crafted SQL being run.
+
+PostManager.term() now supports multiple terms
+
+Added Term.get_absolute_url()
+
+Ensured that WordPress tables are not created or deleted by Django by marking them as unmanaged.
 
 
 ## Requirements
@@ -47,8 +62,3 @@ Add to INSTALLED_APPS:
 Include the following in urls.py.
 
     url(r'^path/to/blog/', include('wordpress.urls')),
-
-
-## Help!
-
-The term/taxonomy support is quite shoddy. Any help in that area would be greatly appreciated.

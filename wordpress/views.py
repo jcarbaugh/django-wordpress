@@ -80,3 +80,11 @@ def taxonomy(request, taxonomy, term):
             paginate_by=PER_PAGE, template_name='wordpress/post_term.html',
             template_object_name='post', allow_empty=True,
             extra_context={taxonomy: term})
+
+def archive_term(request, term_slug):
+    """
+    List posts with common term.
+    I am not going to implement this as I don't need it.
+    This exists so I can generate URL stubs to the term archive.
+    """
+    pass
