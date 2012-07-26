@@ -183,9 +183,8 @@ class PostManager(models.Manager):
         return self._by_status('publish', post_type)
 
     def term(self, term, taxonomy='post_tag'):
-        term = term.replace('-', ' ')
         try:
-            tx = Taxonomy.objects.filter(name=taxonomy, term__name=term)
+            tx = Taxonomy.objects.filter(name=taxonomy, term__slug=term)
             table = '%s_term_relationships' % TABLE_PREFIX
             sql = """SELECT object_id FROM """ + table + """ WHERE term_taxonomy_id in (%s)""" % ",".join(str(t.pk) for t in tx)
             cursor = connections['wordpress'].cursor()
@@ -357,7 +356,7 @@ class Comment(WordPressModel):
 class Term(WordPressModel):
     id = models.IntegerField(db_column='term_id', primary_key=True)
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200)
+    slug = models.CharField(max_length=200)
     group = models.IntegerField(default=0, db_column='term_group')
 
     class Meta:
