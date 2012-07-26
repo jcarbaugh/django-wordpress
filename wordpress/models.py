@@ -1,9 +1,5 @@
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import connections, models
-from django.db.models import signals
-from django.http import HttpResponseRedirect
-import re
 
 STATUS_CHOICES = (
     ('closed', 'closed'),
@@ -18,10 +14,10 @@ POST_STATUS_CHOICES = (
 )
 
 POST_TYPE_CHOICES = (
-    ('attachment','attachment'),
-    ('page','page'),
-    ('post','post'),
-    ('revision','revision'),
+    ('attachment', 'attachment'),
+    ('page', 'page'),
+    ('post', 'post'),
+    ('revision', 'revision'),
 )
 
 USER_STATUS_CHOICES = (
@@ -30,6 +26,7 @@ USER_STATUS_CHOICES = (
 
 READ_ONLY = getattr(settings, "WP_READ_ONLY", True)
 TABLE_PREFIX = getattr(settings, "WP_TABLE_PREFIX", "wp")
+
 
 #
 # Exceptions
@@ -40,6 +37,7 @@ class WordPressException(Exception):
     Exception that is thrown when attempting to save a read-only object.
     """
     pass
+
 
 #
 # Base models
@@ -58,16 +56,17 @@ class WordPressModel(models.Model):
             return model.objects.get(pk=obj_id)
         except model.DoesNotExist:
             pass
-        
+
     def save(self, override=False, **kwargs):
         if READ_ONLY and not override:
-            raise WordPressException, "object is read-only"
+            raise WordPressException("object is read-only")
         super(WordPressModel, self).save(**kwargs)
-        
+
     def delete(self, override=False):
         if READ_ONLY and not override:
-            raise WordPressException, "object is read-only"
+            raise WordPressException("object is read-only")
         super(WordPressModel, self).delete()
+
 
 #
 # WordPress models
@@ -81,21 +80,23 @@ class OptionManager(models.Manager):
         except Option.DoesNotExist:
             pass
 
+
 class Option(models.Model):
     objects = OptionManager()
-    
+
     id = models.IntegerField(db_column='option_id', primary_key=True)
     blog_id = models.IntegerField()
     name = models.CharField(max_length=64, db_column='option_name')
     value = models.TextField(db_column='option_value')
     autoload = models.CharField(max_length=20)
-    
+
     class Meta:
         db_table = '%s_options' % TABLE_PREFIX
         ordering = ["name"]
-    
+
     def __unicode__(self):
         return u"%s: %s" % (self.name, self.value)
+
 
 class User(WordPressModel):
     """
@@ -113,11 +114,12 @@ class User(WordPressModel):
 
     class Meta:
         db_table = '%s_users' % TABLE_PREFIX
-    	ordering = ["display_name"]
-    
+        ordering = ["display_name"]
+
     def __unicode__(self):
         return self.display_name
-    
+
+
 class UserMeta(WordPressModel):
     """
     Meta information about a user.
@@ -126,12 +128,13 @@ class UserMeta(WordPressModel):
     user = models.ForeignKey(User, related_name="meta", db_column='user_id')
     key = models.CharField(max_length=255, db_column='meta_key')
     value = models.TextField(db_column='meta_value')
-    
+
     class Meta:
         db_table = '%s_usermeta' % TABLE_PREFIX
-    
+
     def __unicode__(self):
         return u"%s: %s" % (self.key, self.value)
+
 
 class Link(WordPressModel):
     """
@@ -157,27 +160,28 @@ class Link(WordPressModel):
 
     def __unicode__(self):
         return u"%s %s" % (self.name, self.url)
-    
+
     def is_visible(self):
         return self.visible == 'Y'
-    
+
+
 class PostManager(models.Manager):
     """
     Provides convenience methods for filtering posts by status.
     """
-    
+
     def _by_status(self, status, post_type='post'):
         return Post.objects.filter(status=status, post_type=post_type)
-        
+
     def drafts(self, post_type='post'):
         return self._by_status('draft', post_type)
-        
+
     def private(self, post_type='post'):
         return self._by_status('private', post_type)
-        
+
     def published(self, post_type='post'):
         return self._by_status('publish', post_type)
-        
+
     def term(self, term, taxonomy='post_tag'):
         term = term.replace('-', ' ')
         try:
@@ -190,15 +194,16 @@ class PostManager(models.Manager):
             return Post.objects.published().filter(pk__in=pids)
         except Taxonomy.DoesNotExist:
             return Post.objects.none()
-    
+
+
 class Post(WordPressModel):
     """
     The mother lode.
     The WordPress post.
     """
-    
+
     objects = PostManager()
-    
+
     # post data
     guid = models.CharField(max_length=255)
     post_type = models.CharField(max_length=20, choices=POST_TYPE_CHOICES)
@@ -211,41 +216,41 @@ class Post(WordPressModel):
     content_filtered = models.TextField(db_column='post_content_filtered')
     post_date = models.DateTimeField(db_column='post_date')
     modified = models.DateTimeField(db_column='post_modified')
-    
+
     # comment stuff
     comment_status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     comment_count = models.IntegerField(default=0)
-    
+
     # ping stuff
     ping_status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     to_ping = models.TextField()
     pinged = models.TextField()
-    
+
     # statuses
     password = models.CharField(max_length=20, db_column="post_password")
     category_id = models.IntegerField(db_column='post_category')
-    
+
     # other various lame fields
     parent = models.ForeignKey('self', related_name="children", db_column="post_parent", blank=True, null=True)
     menu_order = models.IntegerField(default=0)
     mime_type = models.CharField(max_length=100, db_column='post_mime_type')
-    
+
     category_cache = None
     tag_cache = None
-	
+
     class Meta:
-    	db_table = '%s_posts' % TABLE_PREFIX
-    	ordering = ["-post_date"]
-    	
+        db_table = '%s_posts' % TABLE_PREFIX
+        ordering = ["-post_date"]
+
     def __unicode__(self):
         return self.title
-        
+
     def categories(self):
         if not self.category_cache:
             taxonomy = "category"
             self.category_cache = self._get_terms(taxonomy)
         return self.category_cache
-    
+
     def attachments(self):
         for post in Post.objects.filter(post_type='attachment', parent=self):
             yield {
@@ -257,7 +262,7 @@ class Post(WordPressModel):
                 'guid': post.guid,
                 'mimetype': post.mime_type,
             }
-    
+
     @models.permalink
     def get_absolute_url(self):
         return ('wp_object_detail', (
@@ -266,21 +271,22 @@ class Post(WordPressModel):
             "%02i" % self.post_date.day,
             self.slug
         ))
-    
+
     def tags(self):
         if not self.tag_cache:
             taxonomy = "post_tag"
             self.tag_cache = self._get_terms(taxonomy)
         return self.tag_cache
-        
+
     def _get_terms(self, taxonomy):
         table = '%s_term_relationships' % TABLE_PREFIX
         sql = """SELECT term_taxonomy_id FROM """ + table + """ WHERE object_id = %s ORDER BY term_order"""
         cursor = connections['wordpress'].cursor()
-        cursor.execute(sql, [self.id,])
+        cursor.execute(sql, [self.id])
         ttids = [row[0] for row in cursor.fetchall()]
         return Term.objects.filter(taxonomies__name=taxonomy, taxonomies__pk__in=ttids)
-        
+
+
 class PostMeta(WordPressModel):
     """
     Post meta data.
@@ -289,13 +295,14 @@ class PostMeta(WordPressModel):
     post = models.ForeignKey(Post, related_name='meta', db_column='post_id')
     key = models.CharField(max_length=255, db_column='meta_key')
     value = models.TextField(db_column='meta_value')
-    
+
     class Meta:
         db_table = '%s_postmeta' % TABLE_PREFIX
-    
+
     def __unicode__(self):
         return u"%s: %s" % (self.key, self.value)
-        
+
+
 class Comment(WordPressModel):
     """
     Comments to Posts.
@@ -305,46 +312,47 @@ class Comment(WordPressModel):
     user_id = models.IntegerField(db_column='user_id', default=0)
     #user = models.ForeignKey(User, related_name="comments", blank=True, null=True, default=0 )
     parent_id = models.IntegerField(default=0, db_column='comment_parent')
-    
+
     # author fields
     author_name = models.CharField(max_length=255, db_column='comment_author')
     author_email = models.EmailField(max_length=100, db_column='comment_author_email')
     author_url = models.URLField(verify_exists=False, db_column='comment_author_url')
     author_ip = models.IPAddressField(db_column='comment_author_ip')
-    
+
     # comment data
     post_date = models.DateTimeField(db_column='comment_date_gmt')
     content = models.TextField(db_column='comment_content')
     karma = models.IntegerField(default=0, db_column='comment_karma')
     approved = models.CharField(max_length=20, db_column='comment_approved')
-    
+
     # other stuff
     agent = models.CharField(max_length=255, db_column='comment_agent')
     comment_type = models.CharField(max_length=20)
-    
+
     class Meta:
-    	db_table = '%s_comments' % TABLE_PREFIX
-    	ordering = ['-post_date']
-    	
+        db_table = '%s_comments' % TABLE_PREFIX
+        ordering = ['-post_date']
+
     def __unicode__(self):
         return u"%s on %s" % (self.author_name, self.post.title)
-        
+
     def get_absolute_url(self):
         return "%s#comment-%i" % (self.post.get_absolute_url(), self.pk)
-        
+
     def parent(self):
         return self._get_object(Comment, self.parent_id)
-    
+
     """
     def user(self):
         return self._get_object(User, self.user_id)
     """
-    
+
     def is_approved(self):
         return self.approved == '1'
-        
+
     def is_spam(self):
         return self.approved == 'spam'
+
 
 class Term(WordPressModel):
     id = models.IntegerField(db_column='term_id', primary_key=True)
@@ -354,10 +362,11 @@ class Term(WordPressModel):
 
     class Meta:
         db_table = '%s_terms' % TABLE_PREFIX
-        ordering = ['name',]
+        ordering = ['name']
 
     def __unicode__(self):
         return self.name
+
 
 class Taxonomy(WordPressModel):
     id = models.IntegerField(db_column='term_taxonomy_id', primary_key=True)
@@ -370,7 +379,7 @@ class Taxonomy(WordPressModel):
 
     class Meta:
         db_table = '%s_term_taxonomy' % TABLE_PREFIX
-        ordering = ['name',]
+        ordering = ['name']
 
     def __unicode__(self):
         try:
@@ -378,9 +387,9 @@ class Taxonomy(WordPressModel):
         except Term.DoesNotExist:
             term = ''
         return u"%s: %s" % (self.name, term)
-        
+
     def parent(self):
         return self._get_object(Taxonomy, self.parent_id)
-    
+
     #def term(self):
     #    return self._get_object(Term, self.term_id)
