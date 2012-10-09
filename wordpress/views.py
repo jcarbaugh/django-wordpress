@@ -2,7 +2,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views.generic import list_detail, date_based
-from wordpress.models import Post
+from wordpress.models import Post, Term
 import datetime
 import urllib
 
@@ -84,11 +84,12 @@ def archive_index(request):
 def taxonomy(request, taxonomy, term):
     taxonomy = TAXONOMIES.get(taxonomy, None)
     if taxonomy:
+        tag = Term.objects.get(slug=term)
         posts = Post.objects.term(term, taxonomy=taxonomy).select_related()
         return list_detail.object_list(request, queryset=posts,
             paginate_by=PER_PAGE, template_name='wordpress/post_term.html',
             template_object_name='post', allow_empty=True,
-            extra_context={taxonomy: term})
+            extra_context={"tag": tag, taxonomy: term})
 
 
 def archive_term(request, term_slug):
