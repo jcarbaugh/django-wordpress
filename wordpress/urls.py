@@ -10,5 +10,6 @@ urlpatterns = patterns('wordpress.views',
     url(r'^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/$', 'archive_day', name='wp_archive_day'),
     url(r'^(?P<year>\d{4})/(?P<month>\d{1,2})/$', 'archive_month', name='wp_archive_month'),
     url(r'^(?P<year>\d{4})/$', 'archive_year', name='wp_archive_year'),
+    url(r'^post/tag/(?P<term_slug>.+)/$', 'archive_term', name='wp_archive_term'),
     url(r'^$', 'archive_index', name='wp_archive_index'),
 )
