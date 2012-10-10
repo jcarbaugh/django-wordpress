@@ -1,4 +1,5 @@
+include CHANGELOG.md
 include LICENSE
-include README.markdown
+include README.rst
 recursive-include wordpress *.py
 recursive-include wordpress/templates *.html

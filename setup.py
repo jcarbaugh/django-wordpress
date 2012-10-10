@@ -1,11 +1,11 @@
 from distutils.core import setup
 
-long_description = open('README.markdown').read()
+long_description = open('README.rst').read()
 
 setup(
-    name='django-wordpress',
-    version="0.1",
-    description='Django models and views for a WordPress database',
+    name='the-real-django-wordpress',
+    version="0.2",
+    description='Django models and views for a WordPress database.',
     long_description=long_description,
     author='Jeremy Carbaugh',
     author_email='jcarbaugh@sunlightfoundation.com',
