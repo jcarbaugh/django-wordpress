@@ -213,11 +213,10 @@ class PostManager(WordPressManager):
         @arg terms Can either be a string (name of the term) or an list of term names.
         """
 
-        terms = terms if isinstance(terms, list) else [terms]
-        terms = [term.replace('-', ' ') for term in terms]
+        terms = terms if isinstance(terms, (list, tuple)) else [terms]
 
         try:
-            tx = Taxonomy.objects.filter(name=taxonomy, term__name__in=terms)
+            tx = Taxonomy.objects.filter(name=taxonomy, term__slug__in=terms)
             post_ids = TermTaxonomyRelationship.objects.filter(term_taxonomy__in=tx).values_list('object_id', flat=True)
 
             return Post.objects.published().filter(pk__in=post_ids)
