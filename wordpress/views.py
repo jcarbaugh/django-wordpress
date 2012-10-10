@@ -85,7 +85,7 @@ def taxonomy(request, taxonomy, term):
     taxonomy = TAXONOMIES.get(taxonomy, None)
     if taxonomy:
         tag = Term.objects.get(slug=term)
-        posts = Post.objects.term(term, taxonomy=taxonomy).select_related()
+        posts = Post.objects.term(tag.name, taxonomy=taxonomy).select_related()
         return list_detail.object_list(request, queryset=posts,
             paginate_by=PER_PAGE, template_name='wordpress/post_term.html',
             template_object_name='post', allow_empty=True,
