@@ -84,7 +84,7 @@ def archive_index(request):
 def taxonomy(request, taxonomy, term):
     taxonomy = TAXONOMIES.get(taxonomy, None)
     if taxonomy:
-        tag = Term.objects.get(slug=term)
+        tag = get_object_or_404(Term, slug=term)
         posts = Post.objects.term(tag.name, taxonomy=taxonomy).select_related()
         return list_detail.object_list(request, queryset=posts,
             paginate_by=PER_PAGE, template_name='wordpress/post_term.html',
