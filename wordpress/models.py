@@ -26,7 +26,6 @@ USER_STATUS_CHOICES = (
 
 READ_ONLY = getattr(settings, "WP_READ_ONLY", True)
 TABLE_PREFIX = getattr(settings, "WP_TABLE_PREFIX", "wp")
-DATABASE = getattr(settings, "WP_DATABASE", "default")
 
 
 #
@@ -45,10 +44,9 @@ class WordPressException(Exception):
 #
 class WordPressManager(models.Manager):
     """
-    Sets the database for all queries.
+    Base manager for wordpress queries.
     """
-    def get_query_set(self, *args, **kwargs):
-        return super(WordPressManager, self).get_query_set(*args, **kwargs).using(DATABASE)
+    pass
 
 
 #

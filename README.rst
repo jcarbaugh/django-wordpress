@@ -31,6 +31,11 @@ Multiple database support
 
 Added the ability to specify which database the WordPress content is coming from. Set it using the *WP_DATABASE* setting. Defaults to "default".
 
+
+Database routers need be set to::
+
+    DATABASE_ROUTERS = ['wordpress.router.WordpressRouter']
+
 Default templates
 =================
 
