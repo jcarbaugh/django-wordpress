@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.3
+
+* fix multi-database support
+
 ## 0.2
 
 * disabled support for Link.category_id and Post.category_id (WordPress 3.x)

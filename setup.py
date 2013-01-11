@@ -4,7 +4,7 @@ long_description = open('README.rst').read()
 
 setup(
     name='the-real-django-wordpress',
-    version="0.2",
+    version="0.3",
     description='Django models and views for a WordPress database.',
     long_description=long_description,
     author='Jeremy Carbaugh',
