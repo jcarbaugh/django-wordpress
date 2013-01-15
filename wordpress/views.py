@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.views.generic import list_detail, date_based
+from django.views import generic
+# from django.views.generic import list_detail, date_based
 from wordpress.models import Post, Term
 import datetime
 import urllib
@@ -15,31 +16,45 @@ TAXONOMIES = {
 }
 
 
-def author_list(request, username):
-    posts = Post.objects.published().filter(author__login=username)
-    return list_detail.object_list(request, queryset=posts,
-        paginate_by=PER_PAGE, template_name="wordpress/post_archive.html",
-        template_object_name="post", allow_empty=True)
+class AuthorArchive(generic.list.ListView):
+
+    allow_empty = True
+    context_object_name = "post_list"
+    paginate_by = PER_PAGE
+    template_name = "wordpress/post_archive.html"
+
+    def get_queryset(self):
+        return Post.objects.published().filter(author__login=self.kwargs['username'])
 
 
-def preview(request, post_id):
-    return list_detail.object_detail(
-        request,
-        queryset=Post.objects.all(),
-        object_id=post_id,
-        template_object_name='post',
-        extra_context={
-            'preview': True,
-        }
-    )
+class Preview(generic.detail.DetailView):
+
+    context_object_name = 'post'
+    pk_url_kwarg = 'p'
+    queryset = Post.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(Preview, self).get_context_data(**kwargs)
+        context.update({'preview': True})
+        return context
 
 
-def object_detail(request, year, month, day, slug):
-    slug = urllib.quote(slug.encode('utf-8')).lower()
-    return date_based.object_detail(request, queryset=Post.objects.published(),
-        date_field='post_date', year=year, month=month, month_format="%m",
-        day=day, slug=slug, template_object_name='post', allow_future=True,
-        extra_context={'post_url': request.build_absolute_uri(request.path)})
+class PostDetail(generic.dates.DateDetailView):
+
+    allow_future = True
+    context_object_name = 'post'
+    date_field = 'post_date'
+    month_format = "%m"
+    queryset = Post.objects.published()
+
+    def get_context_data(self, **kwargs):
+        context = super(PostDetail, self).get_context_data(**kwargs)
+        context.update({'post_url': self.request.build_absolute_uri(self.request.path)})
+        return context
+
+    def get_object(self):
+        self.kwargs['slug'] = urllib.quote(self.kwargs['slug'].encode('utf-8')).lower()
+        return super(PostDetail, self).get_object()
 
 
 def object_attachment(request, year, month, day, post_slug, slug):
@@ -54,48 +69,67 @@ def object_attachment(request, year, month, day, post_slug, slug):
     return HttpResponseRedirect(attachment.guid)
 
 
-def archive_day(request, year, month, day):
-    return date_based.archive_day(request, queryset=Post.objects.published(),
-        date_field='post_date', year=year, month=month, month_format="%m",
-        day=day, template_object_name='post')
+class DayArchive(generic.dates.DayArchiveView):
+    context_object_name = 'post_list'
+    date_field = 'post_date'
+    month_format = '%m'
+    paginate_by = PER_PAGE
+    queryset = Post.objects.published()
 
 
-def archive_month(request, year, month):
-    return date_based.archive_month(request, queryset=Post.objects.published(),
-        date_field='post_date', year=year, month=month, month_format="%m",
-        template_object_name='post')
+class MonthArchive(generic.dates.MonthArchiveView):
+    context_object_name = 'post_list'
+    date_field = 'post_date'
+    month_format = '%m'
+    paginate_by = PER_PAGE
+    queryset = Post.objects.published()
 
 
-def archive_year(request, year):
-    return date_based.archive_year(request, queryset=Post.objects.published(),
-        date_field='post_date', year=year)
+class YearArchive(generic.dates.YearArchiveView):
+    context_object_name = 'post_list'
+    date_field = 'post_date'
+    paginate_by = PER_PAGE
+    queryset = Post.objects.published()
 
 
-def archive_index(request):
-    p = request.GET.get('p', None)
-    if p:
-        return preview(request, p)
-    posts = Post.objects.published().select_related()
-    return list_detail.object_list(request, queryset=posts,
-        paginate_by=PER_PAGE, template_name='wordpress/post_archive.html',
-        template_object_name='post', allow_empty=True)
+class Archive(generic.dates.ArchiveIndexView):
+
+    allow_empty = True
+    context_object_name = 'post_list'
+    paginate_by = PER_PAGE
+    template_name = 'wordpress/post_archive.html'
+
+    def get(self, request, *args, **kwargs):
+        p = request.GET.get('p', None)
+        if p:
+            return Preview.as_view()(request)
+        return super(Archive, self).get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Post.objects.published().select_related()
 
 
-def taxonomy(request, taxonomy, term):
-    taxonomy = TAXONOMIES.get(taxonomy, None)
-    if taxonomy:
-        tag = get_object_or_404(Term, slug=term)
-        posts = Post.objects.term(tag.name, taxonomy=taxonomy).select_related()
-        return list_detail.object_list(request, queryset=posts,
-            paginate_by=PER_PAGE, template_name='wordpress/post_term.html',
-            template_object_name='post', allow_empty=True,
-            extra_context={"tag": tag, taxonomy: term})
+class TaxonomyArchive(generic.list.ListView):
+
+    allow_empty = True
+    context_object_name = "post_list"
+    paginate_by = PER_PAGE
+    template_name = "wordpress/post_term.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(TaxonomyArchive, self).get_context_data(**kwargs)
+        context.update({
+            'tag': Term.objects.get(slug=self.kwargs['term']),
+            self.kwargs['taxonomy']: self.kwargs['term'],
+        })
+        return context
+
+    def get_queryset(self):
+        taxonomy = TAXONOMIES.get(self.kwargs['taxonomy'], None)
+        if taxonomy:
+            tag = get_object_or_404(Term, slug=self.kwargs['term'])
+            return Post.objects.term(tag.name, taxonomy=taxonomy).select_related()
 
 
-def archive_term(request, term_slug):
-    """
-    List posts with common term.
-    I am not going to implement this as I don't need it.
-    This exists so I can generate URL stubs to the term archive.
-    """
+class TermArchive(generic.list.ListView):
     pass
