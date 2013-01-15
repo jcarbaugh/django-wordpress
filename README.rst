@@ -41,6 +41,11 @@ Default templates
 
 Default templates are provided only for development purposes so you can see content on your screen! Please override these with customized templates for your application.
 
+Export Management Commands
+==========================
+
+* *wpexport* Dump published posts in WXR format.
+* *wpexportauthors* Export authors as CSV.
 
 -----------------------------
 Working With WordPress Models

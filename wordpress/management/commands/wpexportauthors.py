@@ -1,11 +1,11 @@
 import csv
 import sys
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import NoArgsCommand
 from wordpress.models import User
 
-
 HEADERS = ("id", "username", "display_name", "email")
+
 
 class Command(NoArgsCommand):
 
@@ -22,5 +22,3 @@ class Command(NoArgsCommand):
                 author.email,
             )
             writer.writerow(row)
-
-
