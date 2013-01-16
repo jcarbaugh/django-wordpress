@@ -143,50 +143,50 @@ deprecation_msg = "Method-based views are deprecated and will be removed in a ne
 
 
 def author_list(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return AuthorArchive.as_view()(request, *args, **kwargs)
 
 
 def preview(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return Preview.as_view()(request, *args, **kwargs)
 
 
 def object_detail(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return PostDetail.as_view()(request, *args, **kwargs)
 
 
 def object_attachment(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return PostAttachment.as_view()(request, *args, **kwargs)
 
 
 def archive_day(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return DayArchive.as_view()(request, *args, **kwargs)
 
 
 def archive_month(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return MonthArchive.as_view()(request, *args, **kwargs)
 
 
 def archive_year(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return YearArchive.as_view()(request, *args, **kwargs)
 
 
 def archive_index(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return Archive.as_view()(request, *args, **kwargs)
 
 
 def taxonomy(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return TaxonomyArchive.as_view()(request, *args, **kwargs)
 
 
 def archive_term(request, *args, **kwargs):
-    warnings.warn(deprecation_msg, DeprecationWarning)
+    warnings.warn(deprecation_msg, DeprecationWarning, stacklevel=2)
     return TermArchive.as_view()(request, *args, **kwargs)
