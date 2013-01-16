@@ -85,9 +85,7 @@ class MonthArchive(generic.dates.MonthArchiveView):
 
 
 class YearArchive(generic.dates.YearArchiveView):
-    context_object_name = 'post_list'
     date_field = 'post_date'
-    paginate_by = PER_PAGE
     queryset = Post.objects.published()
 
 
