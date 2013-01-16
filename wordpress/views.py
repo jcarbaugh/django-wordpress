@@ -2,9 +2,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views import generic
-# from django.views.generic import list_detail, date_based
 from wordpress.models import Post, Term
-import datetime
 import urllib
 
 PER_PAGE = getattr(settings, 'WP_PER_PAGE', 10)
@@ -56,17 +54,16 @@ class PostDetail(generic.dates.DateDetailView):
         self.kwargs['slug'] = urllib.quote(self.kwargs['slug'].encode('utf-8')).lower()
         return super(PostDetail, self).get_object()
 
+    def get(self, request, *args, **kwargs):
+        return super(PostDetail, self).get(request, *args, **kwargs)
 
-def object_attachment(request, year, month, day, post_slug, slug):
-    post_date = datetime.datetime.strptime("%s/%s/%s" % (year, month, day), "%Y/%m/%d")
-    post = get_object_or_404(Post.objects.published(),
-        post_date__year=post_date.year,
-        post_date__month=post_date.month,
-        post_date__day=post_date.day,
-        slug=urllib.quote(post_slug.encode('utf-8')).lower()
-    )
-    attachment = get_object_or_404(Post, post_type='attachment', slug=slug, parent=post)
-    return HttpResponseRedirect(attachment.guid)
+
+class PostAttachment(PostDetail):
+
+    def get(self, request, *args, **kwargs):
+        post = self.get_object()
+        attachment = get_object_or_404(Post, post_type='attachment', slug=self.kwargs['attachment_slug'], parent=post)
+        return HttpResponseRedirect(attachment.guid)
 
 
 class DayArchive(generic.dates.DayArchiveView):
