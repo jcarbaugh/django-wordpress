@@ -1,5 +1,10 @@
 # Changelog for django-wordpress
 
+## 0.4
+
+* add class-based views
+* deprecate method-based views
+
 ## 0.3
 
 * fix multi-database support

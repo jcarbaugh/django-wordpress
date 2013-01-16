@@ -5,11 +5,7 @@ long_description = open('README.rst').read()
 
 setup(
     name='the-real-django-wordpress',
-<<<<<<< Updated upstream
-    version="0.3",
-=======
     version=wordpress.__version__,
->>>>>>> Stashed changes
     description='Django models and views for a WordPress database.',
     long_description=long_description,
     author='Jeremy Carbaugh',

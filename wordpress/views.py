@@ -1,9 +1,11 @@
+import urllib
+import warnings
+
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from wordpress.models import Post, Term
-import urllib
 
 PER_PAGE = getattr(settings, 'WP_PER_PAGE', 10)
 
@@ -130,3 +132,61 @@ class TaxonomyArchive(generic.list.ListView):
 
 class TermArchive(generic.list.ListView):
     pass
+
+
+#
+# *** DEPRECATED ***
+# Method-based views for compatibilty with older code.
+#
+
+deprecation_msg = "Method-based views are deprecated and will be removed in a near-future version."
+
+
+def author_list(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return AuthorArchive.as_view()(request, *args, **kwargs)
+
+
+def preview(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return Preview.as_view()(request, *args, **kwargs)
+
+
+def object_detail(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return PostDetail.as_view()(request, *args, **kwargs)
+
+
+def object_attachment(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return PostAttachment.as_view()(request, *args, **kwargs)
+
+
+def archive_day(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return DayArchive.as_view()(request, *args, **kwargs)
+
+
+def archive_month(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return MonthArchive.as_view()(request, *args, **kwargs)
+
+
+def archive_year(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return YearArchive.as_view()(request, *args, **kwargs)
+
+
+def archive_index(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return Archive.as_view()(request, *args, **kwargs)
+
+
+def taxonomy(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return TaxonomyArchive.as_view()(request, *args, **kwargs)
+
+
+def archive_term(request, *args, **kwargs):
+    warnings.warn(deprecation_msg, DeprecationWarning)
+    return TermArchive.as_view()(request, *args, **kwargs)
