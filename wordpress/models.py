@@ -214,7 +214,7 @@ class PostManager(WordPressManager):
         terms = terms if isinstance(terms, (list, tuple)) else [terms]
 
         try:
-            tx = Taxonomy.objects.filter(name=taxonomy, term__name__in=terms)
+            tx = Taxonomy.objects.filter(name=taxonomy, term__slug__in=terms)
             post_ids = TermTaxonomyRelationship.objects.filter(term_taxonomy__in=tx).values_list('object_id', flat=True)
 
             return Post.objects.published().filter(pk__in=post_ids)
