@@ -124,8 +124,7 @@ class TaxonomyArchive(generic.list.ListView):
     def get_queryset(self):
         taxonomy = TAXONOMIES.get(self.kwargs['taxonomy'], None)
         if taxonomy:
-            tag = get_object_or_404(Term, slug=self.kwargs['term'])
-            return Post.objects.term(tag.name, taxonomy=taxonomy).select_related()
+            return Post.objects.term(self.kwargs['term'], taxonomy=taxonomy).select_related()
 
 
 class TermArchive(generic.list.ListView):
