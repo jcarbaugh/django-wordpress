@@ -116,7 +116,7 @@ class TaxonomyArchive(generic.list.ListView):
     def get_context_data(self, **kwargs):
         context = super(TaxonomyArchive, self).get_context_data(**kwargs)
         context.update({
-            'tag': Term.objects.get(slug=self.kwargs['term']),
+            'tag': get_object_or_404(Term, slug=self.kwargs['term']),
             self.kwargs['taxonomy']: self.kwargs['term'],
         })
         return context
