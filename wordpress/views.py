@@ -95,7 +95,8 @@ class Archive(generic.dates.ArchiveIndexView):
     context_object_name = 'post_list'
     paginate_by = PER_PAGE
     template_name = 'wordpress/post_archive.html'
-
+    date_field = 'post_date'
+    
     def get(self, request, *args, **kwargs):
         p = request.GET.get('p', None)
         if p:
