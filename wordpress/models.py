@@ -410,7 +410,7 @@ class Term(WordPressModel):
     def __unicode__(self):
         return self.name
 
-    @models.perma
+    @models.permalink
     
     def get_absolute_url(self):
         return ('wp_archive_term', (self.slug, ))
