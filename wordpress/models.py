@@ -164,7 +164,7 @@ class Link(WordPressModel):
     """
 
     id = models.IntegerField(db_column='link_id', primary_key=True)
-    url = models.URLField(max_length=2 db_column='link_url')
+    url = models.URLField(max_length=255, db_column='link_url')
     name = models.CharField(max_length=255, db_column='link_name')
     image = models.CharField(max_length=255, db_column='link_image')
     target = models.CharField(max_length=25, db_column='link_target')
