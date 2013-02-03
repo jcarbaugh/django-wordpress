@@ -125,7 +125,7 @@ class User(WordPressModel):
     password = models.CharField(max_length=64, db_column='user_pass')
     username = models.CharField(max_length=255, db_column='user_nicename')
     email = models.CharField(max_length=100, db_column='user_email')
-    url = models.URLField(max_length=100, db_column='user_url', verify_exists=False)
+    url = models.URLField(max_length=100, db_column='user_url', blank=True)
     date_registered = models.DateTimeField(auto_now_add=True, db_column='user_registered')
     activation_key = models.CharField(max_length=60, db_column='user_activation_key')
     status = models.IntegerField(default=0, choices=USER_STATUS_CHOICES, db_column='user_status')
@@ -164,7 +164,7 @@ class Link(WordPressModel):
     """
 
     id = models.IntegerField(db_column='link_id', primary_key=True)
-    url = models.URLField(max_length=255, verify_exists=False, db_column='link_url')
+    url = models.URLField(max_length=255, db_column='link_url')
     name = models.CharField(max_length=255, db_column='link_name')
     image = models.CharField(max_length=255, db_column='link_image')
     target = models.CharField(max_length=25, db_column='link_target')
@@ -356,7 +356,7 @@ class Comment(WordPressModel):
     # author fields
     author_name = models.CharField(max_length=255, db_column='comment_author')
     author_email = models.EmailField(max_length=100, db_column='comment_author_email')
-    author_url = models.URLField(verify_exists=False, db_column='comment_author_url')
+    author_url = models.URLField(blank=True, db_column='comment_author_url')
     author_ip = models.IPAddressField(db_column='comment_author_ip')
 
     # comment data
@@ -411,6 +411,7 @@ class Term(WordPressModel):
         return self.name
 
     @models.permalink
+    
     def get_absolute_url(self):
         return ('wp_archive_term', (self.slug, ))
 
