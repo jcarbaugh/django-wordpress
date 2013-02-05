@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from django.db import models
 
@@ -221,6 +223,23 @@ class PostManager(WordPressManager):
         except Taxonomy.DoesNotExist:
             return Post.objects.none()
 
+    def from_path(self, path):
+
+        (ymd, slug) = path.strip('/').rsplit('/', 1)
+
+        start_date = datetime.datetime.strptime(ymd, "%Y/%m/%d")
+        end_date = start_date + datetime.timedelta(days=1) - datetime.timedelta(minutes=1)
+
+        params = {
+            'post_date__range': (start_date, end_date),
+            'slug': slug,
+        }
+
+        try:
+            return Post.objects.published().get(**params)
+        except Post.DoesNotExist:
+            pass  # fall through to return None
+
 
 class TermTaxonomyRelationship(WordPressModel):
 
@@ -411,7 +430,7 @@ class Term(WordPressModel):
         return self.name
 
     @models.permalink
-    
+
     def get_absolute_url(self):
         return ('wp_archive_term', (self.slug, ))
 
