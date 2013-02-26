@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from wordpress.views import *
 
 urlpatterns = patterns('wordpress.views',
