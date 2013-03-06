@@ -6,11 +6,6 @@ Models and views for reading a WordPress database. Compatible with WordPress ver
 
 django-wordpress is a project of `Sunlight Foundation <http://sunlightfoundation.com>`_ (c) 2012.
 
-Contributors:
-
-* `jcarbaugh <https://github.com/jcarbaugh>`_
-* `twig <https://github.com/twig>`_
-
 
 --------
 Features

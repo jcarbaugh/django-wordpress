@@ -1,5 +1,11 @@
 # Changelog for django-wordpress
 
+## 0.5
+
+* Django 1.5 support
+* fixed incorrect lookups for term views
+* added Post.objects.from_path(path) method to load post from WordPress-style URL path
+
 ## 0.4
 
 * add class-based views
