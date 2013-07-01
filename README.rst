@@ -2,9 +2,9 @@
 django-wordpress
 ================
 
-Models and views for reading a WordPress database. Compatible with WordPress version 3.1.
+Models and views for reading a WordPress database. Compatible with WordPress version 3.5.
 
-django-wordpress is a project of `Sunlight Foundation <http://sunlightfoundation.com>`_ (c) 2012.
+django-wordpress is a project of `Sunlight Foundation <http://sunlightfoundation.com>`_.
 
 
 --------
