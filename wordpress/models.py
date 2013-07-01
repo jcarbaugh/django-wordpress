@@ -104,7 +104,6 @@ class Option(WordPressModel):
     objects = OptionManager()
 
     id = models.IntegerField(db_column='option_id', primary_key=True)
-    blog_id = models.IntegerField()
     name = models.CharField(max_length=64, db_column='option_name')
     value = models.TextField(db_column='option_value')
     autoload = models.CharField(max_length=20)
