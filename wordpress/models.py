@@ -243,7 +243,7 @@ class PostManager(WordPressManager):
 class TermTaxonomyRelationship(WordPressModel):
 
     object_id = models.IntegerField()
-    term_taxonomy = models.ForeignKey('Taxonomy', db_column='term_taxonomy_id')
+    term_taxonomy = models.ForeignKey('Taxonomy', related_name='relationships', db_column='term_taxonomy_id')
     order = models.IntegerField(db_column='term_order')
 
     class Meta:
@@ -338,8 +338,9 @@ class Post(WordPressModel):
         return self.tag_cache
 
     def _get_terms(self, taxonomy):
-        tr_pks = TermTaxonomyRelationship.objects.filter(object_id=self.id).values_list('term_taxonomy__pk', flat=True)
-        return Term.objects.filter(taxonomies__name=taxonomy, taxonomies__pk__in=tr_pks)
+        qs = Term.objects.filter(taxonomies__name=taxonomy,
+                                 taxonomies__relationships__object_id=self.id)
+        return qs.order_by('taxonomies__relationships__order', 'name')
 
 
 class PostMeta(WordPressModel):

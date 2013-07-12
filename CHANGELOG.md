@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.7
+
+* honor order of term taxonomy relationships
+
 ## 0.6
 
 * remove wp_options.blog_id field as it no longer exists in WP 3.5.x
