@@ -5,7 +5,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views import generic
-from wordpress.models import Post, Term
+from wordpress.models import Post, Term, User
 
 PER_PAGE = getattr(settings, 'WP_PER_PAGE', 10)
 
@@ -25,6 +25,11 @@ class AuthorArchive(generic.list.ListView):
 
     def get_queryset(self):
         return Post.objects.published().filter(author__login=self.kwargs['username'])
+
+    def get_context_data(self, **kwargs):
+        context = super(AuthorArchive, self).get_context_data(**kwargs)
+        context.update({'author': User.objects.get(login=self.kwargs['username'])})
+        return context
 
 
 class Preview(generic.detail.DetailView):
@@ -96,7 +101,7 @@ class Archive(generic.dates.ArchiveIndexView):
     paginate_by = PER_PAGE
     template_name = 'wordpress/post_archive.html'
     date_field = 'post_date'
-    
+
     def get(self, request, *args, **kwargs):
         p = request.GET.get('p', None)
         if p:
