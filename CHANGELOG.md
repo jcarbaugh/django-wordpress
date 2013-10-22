@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.8
+
+* add User to context when displaying author archive
+
 ## 0.7
 
 * honor order of term taxonomy relationships
