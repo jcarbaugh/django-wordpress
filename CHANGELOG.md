@@ -1,5 +1,10 @@
 # Changelog for django-wordpress
 
+## 0.9
+
+* add post_archive_author template
+* change default templates (except year archive) to extend from post_archive template
+
 ## 0.8
 
 * add User to context when displaying author archive
