@@ -21,7 +21,7 @@ class AuthorArchive(generic.list.ListView):
     allow_empty = True
     context_object_name = "post_list"
     paginate_by = PER_PAGE
-    template_name = "wordpress/post_archive.html"
+    template_name = "wordpress/post_archive_author.html"
 
     def get_queryset(self):
         return Post.objects.published().filter(author__login=self.kwargs['username'])
