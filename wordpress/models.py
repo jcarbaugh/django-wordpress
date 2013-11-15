@@ -1,3 +1,4 @@
+import collections
 import datetime
 
 from django.conf import settings
@@ -293,8 +294,7 @@ class Post(WordPressModel):
     menu_order = models.IntegerField(default=0)
     mime_type = models.CharField(max_length=100, db_column='post_mime_type')
 
-    category_cache = None
-    tag_cache = None
+    term_cache = None
 
     class Meta:
         db_table = '%s_posts' % TABLE_PREFIX
@@ -305,10 +305,7 @@ class Post(WordPressModel):
         return self.title
 
     def categories(self):
-        if not self.category_cache:
-            taxonomy = "category"
-            self.category_cache = self._get_terms(taxonomy)
-        return self.category_cache
+        return self._get_terms("category")
 
     def attachments(self):
         for post in Post.objects.filter(post_type='attachment', parent=self):
@@ -332,15 +329,20 @@ class Post(WordPressModel):
         ))
 
     def tags(self):
-        if not self.tag_cache:
-            taxonomy = "post_tag"
-            self.tag_cache = self._get_terms(taxonomy)
-        return self.tag_cache
+        return self._get_terms("post_tag")
 
     def _get_terms(self, taxonomy):
-        qs = Term.objects.filter(taxonomies__name=taxonomy,
-                                 taxonomies__relationships__object_id=self.id)
-        return qs.order_by('taxonomies__relationships__order', 'name')
+        if not self.term_cache:
+
+            self.term_cache = collections.defaultdict(list)
+
+            qs = Taxonomy.objects.filter(relationships__object_id=self.id).select_related()
+            qs = qs.order_by('relationships__order', 'term__name')
+
+            for tt in qs:
+                self.term_cache[tt.name].append(tt.term)
+
+        return self.term_cache.get(taxonomy) or []
 
 
 class PostMeta(WordPressModel):
