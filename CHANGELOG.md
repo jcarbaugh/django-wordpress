@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.9.1
+
+* fix call to Preview view
+
 ## 0.9
 
 * add post_archive_author template
