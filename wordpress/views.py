@@ -103,9 +103,9 @@ class Archive(generic.dates.ArchiveIndexView):
     date_field = 'post_date'
 
     def get(self, request, *args, **kwargs):
-        p = request.GET.get('p', None)
+        p = request.GET.get('p')
         if p:
-            return Preview.as_view()(request)
+            return Preview.as_view()(request, p=p)
         return super(Archive, self).get(request, *args, **kwargs)
 
     def get_queryset(self):
