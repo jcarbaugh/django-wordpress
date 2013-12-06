@@ -197,7 +197,7 @@ class PostManager(WordPressManager):
     """
 
     def _by_status(self, status, post_type='post'):
-        return Post.objects.filter(status=status, post_type=post_type)
+        return Post.objects.filter(status=status, post_type=post_type).select_related().prefetch_related('meta')
 
     def drafts(self, post_type='post'):
         return self._by_status('draft', post_type)
@@ -295,6 +295,7 @@ class Post(WordPressModel):
     mime_type = models.CharField(max_length=100, db_column='post_mime_type')
 
     term_cache = None
+    child_cache = None
 
     class Meta:
         db_table = '%s_posts' % TABLE_PREFIX
@@ -308,16 +309,17 @@ class Post(WordPressModel):
         return self._get_terms("category")
 
     def attachments(self):
-        for post in Post.objects.filter(post_type='attachment', parent=self):
-            yield {
-                'id': post.id,
-                'slug': post.slug,
-                'timestamp': post.post_date,
-                'description': post.content,
-                'title': post.title,
-                'guid': post.guid,
-                'mimetype': post.mime_type,
-            }
+        for post in self._get_children():
+            if post.post_type == 'attachment':
+                yield {
+                    'id': post.id,
+                    'slug': post.slug,
+                    'timestamp': post.post_date,
+                    'description': post.content,
+                    'title': post.title,
+                    'guid': post.guid,
+                    'mimetype': post.mime_type,
+                }
 
     @models.permalink
     def get_absolute_url(self):
@@ -331,8 +333,14 @@ class Post(WordPressModel):
     def tags(self):
         return self._get_terms("post_tag")
 
+    def _get_children(self):
+        if self.child_cache is None:
+            self.child_cache = list(self.children.all())
+        return self.child_cache
+
     def _get_terms(self, taxonomy):
-        if not self.term_cache:
+
+        if self.term_cache is None:
 
             self.term_cache = collections.defaultdict(list)
 
