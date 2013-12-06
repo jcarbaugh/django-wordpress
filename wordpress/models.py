@@ -340,17 +340,24 @@ class Post(WordPressModel):
 
     def _get_terms(self, taxonomy):
 
-        if self.term_cache is None:
+        if not self.term_cache:
 
             self.term_cache = collections.defaultdict(list)
 
             qs = Taxonomy.objects.filter(relationships__object_id=self.id).select_related()
             qs = qs.order_by('relationships__order', 'term__name')
 
-            for tt in qs:
-                self.term_cache[tt.name].append(tt.term)
+            term_ids = [tax.term_id for tax in qs]
 
-        return self.term_cache.get(taxonomy) or []
+            terms = {}
+            for term in Term.objects.filter(id__in=term_ids):
+                terms[term.id] = term
+
+            for tax in qs:
+                if tax.term_id in terms:
+                    self.term_cache[tax.name].append(terms[tax.term_id])
+
+        return self.term_cache.get(taxonomy)
 
 
 class PostMeta(WordPressModel):
