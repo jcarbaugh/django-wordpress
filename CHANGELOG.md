@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.9.4
+
+* prefetch term objects when getting taxonomies
+
 ## 0.9.3
 
 * add child post cache
