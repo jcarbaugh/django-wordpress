@@ -1,5 +1,13 @@
 # Changelog for django-wordpress
 
+## 0.9.3
+
+* add child post cache
+
+## 0.9.2
+
+* add tag cache
+
 ## 0.9.1
 
 * fix call to Preview view
