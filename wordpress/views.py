@@ -2,7 +2,7 @@ import urllib
 import warnings
 
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from wordpress.models import Post, Term, User
@@ -23,12 +23,19 @@ class AuthorArchive(generic.list.ListView):
     paginate_by = PER_PAGE
     template_name = "wordpress/post_archive_author.html"
 
+    def get(self, request, *args, **kwargs):
+        try:
+            self.author = User.objects.get(login=self.kwargs['username'])
+        except User.DoesNotExist:
+            raise Http404
+        return super(AuthorArchive, self).get(request, *args, **kwargs)
+
     def get_queryset(self):
-        return Post.objects.published().filter(author__login=self.kwargs['username'])
+        return Post.objects.published().filter(author=self.author)
 
     def get_context_data(self, **kwargs):
         context = super(AuthorArchive, self).get_context_data(**kwargs)
-        context.update({'author': User.objects.get(login=self.kwargs['username'])})
+        context['author'] = self.author
         return context
 
 

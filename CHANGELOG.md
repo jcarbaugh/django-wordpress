@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.9.5
+
+* fix error handling in author archive when author does not exist
+
 ## 0.9.4
 
 * prefetch term objects when getting taxonomies
