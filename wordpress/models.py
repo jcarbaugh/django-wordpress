@@ -2,6 +2,7 @@ import collections
 import datetime
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 STATUS_CHOICES = (
@@ -94,9 +95,9 @@ class WordPressModel(models.Model):
 class OptionManager(WordPressManager):
     def get_value(self, name):
         try:
-            o = Option.objects.get(name=name)
+            o = self.get(name=name)
             return o.value
-        except Option.DoesNotExist:
+        except ObjectDoesNotExist:
             pass
 
 
@@ -197,7 +198,7 @@ class PostManager(WordPressManager):
     """
 
     def _by_status(self, status, post_type='post'):
-        return Post.objects.filter(status=status, post_type=post_type).select_related().prefetch_related('meta')
+        return self.filter(status=status, post_type=post_type).select_related().prefetch_related('meta')
 
     def drafts(self, post_type='post'):
         return self._by_status('draft', post_type)
@@ -219,9 +220,9 @@ class PostManager(WordPressManager):
             tx = Taxonomy.objects.filter(name=taxonomy, term__slug__in=terms)
             post_ids = TermTaxonomyRelationship.objects.filter(term_taxonomy__in=tx).values_list('object_id', flat=True)
 
-            return Post.objects.published().filter(pk__in=post_ids)
+            return self.published().filter(pk__in=post_ids)
         except Taxonomy.DoesNotExist:
-            return Post.objects.none()
+            return self.none()
 
     def from_path(self, path):
 
@@ -236,8 +237,8 @@ class PostManager(WordPressManager):
         }
 
         try:
-            return Post.objects.published().get(**params)
-        except Post.DoesNotExist:
+            return self.published().get(**params)
+        except ObjectDoesNotExist:
             pass  # fall through to return None
 
 
