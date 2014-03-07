@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.9.6
+
+* allow hyphens in author usernames
+
 ## 0.9.5
 
 * fix error handling in author archive when author does not exist
