@@ -3,7 +3,7 @@ from wordpress.views import *
 
 urlpatterns = patterns('wordpress.views',
 
-    url(r'^author/(?P<username>\w+)/$',
+    url(r'^author/(?P<username>[\w-]+)/$',
         AuthorArchive.as_view(), name='wp_author'),
 
     url(r'^category/(?P<term>.+)/$',
