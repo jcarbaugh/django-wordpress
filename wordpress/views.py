@@ -76,7 +76,7 @@ class PostAttachment(PostDetail):
 
     def get(self, request, *args, **kwargs):
         post = self.get_object()
-        attachment = get_object_or_404(Post, post_type='attachment', slug=self.kwargs['attachment_slug'], parent=post)
+        attachment = get_object_or_404(Post, post_type='attachment', slug=self.kwargs['attachment_slug'], parent_id=post.pk)
         return HttpResponseRedirect(attachment.guid)
 
 
