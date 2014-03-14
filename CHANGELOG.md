@@ -1,5 +1,9 @@
 # Changelog for django-wordpress
 
+## 0.10.1
+
+* fix issue where attachment view refered to old parent model field
+
 ## 0.10.0
 
 * remove parent foreign key field and replace with parent_id integer field
