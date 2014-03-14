@@ -291,7 +291,8 @@ class Post(WordPressModel):
 #    category_id = models.IntegerField(db_column='post_category')
 
     # other various lame fields
-    parent = models.ForeignKey('self', related_name="children", db_column="post_parent", blank=True, null=True)
+    parent_id = models.IntegerField(default=0, db_column="post_parent")
+    # parent = models.ForeignKey('self', related_name="children", db_column="post_parent", blank=True, null=True)
     menu_order = models.IntegerField(default=0)
     mime_type = models.CharField(max_length=100, db_column='post_mime_type')
 
@@ -300,27 +301,19 @@ class Post(WordPressModel):
 
     class Meta:
         db_table = '%s_posts' % TABLE_PREFIX
+        get_latest_by = 'post_date'
         ordering = ["-post_date"]
         managed = False
 
     def __unicode__(self):
         return self.title
 
-    def categories(self):
-        return self._get_terms("category")
-
-    def attachments(self):
-        for post in self._get_children():
-            if post.post_type == 'attachment':
-                yield {
-                    'id': post.id,
-                    'slug': post.slug,
-                    'timestamp': post.post_date,
-                    'description': post.content,
-                    'title': post.title,
-                    'guid': post.guid,
-                    'mimetype': post.mime_type,
-                }
+    def save(self, **kwargs):
+        if self.parent_id is None:
+            self.parent_id = 0
+        super(Post, self).save(**kwargs)
+        self.child_cache = None
+        self.term_cache = None
 
     @models.permalink
     def get_absolute_url(self):
@@ -331,12 +324,11 @@ class Post(WordPressModel):
             self.slug
         ))
 
-    def tags(self):
-        return self._get_terms("post_tag")
+    # cache stuff
 
     def _get_children(self):
         if self.child_cache is None:
-            self.child_cache = list(self.children.all())
+            self.child_cache = list(Post.objects.filter(parent_id=self.pk))
         return self.child_cache
 
     def _get_terms(self, taxonomy):
@@ -359,6 +351,44 @@ class Post(WordPressModel):
                     self.term_cache[tax.name].append(terms[tax.term_id])
 
         return self.term_cache.get(taxonomy)
+
+    # properties
+
+    @property
+    def children(self):
+        return self._get_children()
+
+    @property
+    def parent(self):
+        if self.parent_id:
+            return Post.objects.get(pk=self.parent_id)
+
+    @parent.setter
+    def parent(self, post):
+        if post.pk is None:
+            raise ValueError('parent post must have an ID')
+        self.parent_id = post.pk
+
+    # related objects
+
+    def categories(self):
+        return self._get_terms("category")
+
+    def attachments(self):
+        for post in self._get_children():
+            if post.post_type == 'attachment':
+                yield {
+                    'id': post.id,
+                    'slug': post.slug,
+                    'timestamp': post.post_date,
+                    'description': post.content,
+                    'title': post.title,
+                    'guid': post.guid,
+                    'mimetype': post.mime_type,
+                }
+
+    def tags(self):
+        return self._get_terms("post_tag")
 
 
 class PostMeta(WordPressModel):
