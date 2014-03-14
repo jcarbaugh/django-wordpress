@@ -2,7 +2,7 @@
 django-wordpress
 ================
 
-Models and views for reading a WordPress database. Compatible with WordPress version 3.5.
+Models and views for reading a WordPress database. Compatible with WordPress version 3.5+.
 
 django-wordpress is a project of `Sunlight Foundation <http://sunlightfoundation.com>`_.
 
@@ -26,7 +26,6 @@ Multiple database support
 
 Added the ability to specify which database the WordPress content is coming from. Set it using the *WP_DATABASE* setting. Defaults to "default".
 
-
 Database routers need be set to::
 
     DATABASE_ROUTERS = ['wordpress.router.WordpressRouter']
@@ -34,7 +33,7 @@ Database routers need be set to::
 Default templates
 =================
 
-Default templates are provided only for development purposes so you can see content on your screen! Please override these with customized templates for your application.
+Default templates are provided only for development purposes so you can see content in your browser! Please override these with customized templates for your application.
 
 Export Management Commands
 ==========================

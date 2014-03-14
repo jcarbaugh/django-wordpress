@@ -1,8 +1,14 @@
 # Changelog for django-wordpress
 
+## 0.10.0
+
+* remove parent foreign key field and replace with parent_id integer field
+* add parent property methods to mimic functionality of foreign key field
+
 ## 0.9.6
 
 * allow hyphens in author usernames
+* remove direct call to model in manager methods
 
 ## 0.9.5
 
