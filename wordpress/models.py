@@ -29,7 +29,6 @@ USER_STATUS_CHOICES = (
     (0, "active"),
 )
 
-
 READ_ONLY = getattr(settings, "WP_READ_ONLY", True)
 TABLE_PREFIX = getattr(settings, "WP_TABLE_PREFIX", "wp")
 
@@ -482,7 +481,6 @@ class Term(WordPressModel):
         return self.name
 
     @models.permalink
-
     def get_absolute_url(self):
         return ('wp_archive_term', (self.slug, ))
 
