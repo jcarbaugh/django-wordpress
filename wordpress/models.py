@@ -11,7 +11,6 @@ STATUS_CHOICES = (
     ('open', 'open'),
 )
 
-
 POST_STATUS_CHOICES = (
     ('draft', 'draft'),
     ('inherit', 'inherit'),
@@ -19,14 +18,12 @@ POST_STATUS_CHOICES = (
     ('publish', 'publish'),
 )
 
-
 POST_TYPE_CHOICES = (
     ('attachment', 'attachment'),
     ('page', 'page'),
     ('post', 'post'),
     ('revision', 'revision'),
 )
-
 
 USER_STATUS_CHOICES = (
     (0, "active"),
@@ -51,6 +48,7 @@ class WordPressException(Exception):
 #
 # Base managers
 #
+
 class WordPressManager(models.Manager):
     """
     Base manager for wordpress queries.
@@ -203,7 +201,8 @@ class PostManager(WordPressManager):
     """
 
     def _by_status(self, status, post_type='post'):
-        return self.filter(status=status, post_type=post_type).select_related().prefetch_related('meta')
+        return self.filter(status=status, post_type=post_type)\
+            .select_related().prefetch_related('meta')
 
     def drafts(self, post_type='post'):
         return self._by_status('draft', post_type)
