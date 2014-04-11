@@ -5,10 +5,12 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
+
 STATUS_CHOICES = (
     ('closed', 'closed'),
     ('open', 'open'),
 )
+
 
 POST_STATUS_CHOICES = (
     ('draft', 'draft'),
@@ -17,6 +19,7 @@ POST_STATUS_CHOICES = (
     ('publish', 'publish'),
 )
 
+
 POST_TYPE_CHOICES = (
     ('attachment', 'attachment'),
     ('page', 'page'),
@@ -24,9 +27,11 @@ POST_TYPE_CHOICES = (
     ('revision', 'revision'),
 )
 
+
 USER_STATUS_CHOICES = (
     (0, "active"),
 )
+
 
 READ_ONLY = getattr(settings, "WP_READ_ONLY", True)
 TABLE_PREFIX = getattr(settings, "WP_TABLE_PREFIX", "wp")
