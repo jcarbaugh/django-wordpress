@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
+
 STATUS_CHOICES = (
     ('closed', 'closed'),
     ('open', 'open'),
@@ -46,6 +47,7 @@ class WordPressException(Exception):
 #
 # Base managers
 #
+
 class WordPressManager(models.Manager):
     """
     Base manager for wordpress queries.
@@ -198,7 +200,8 @@ class PostManager(WordPressManager):
     """
 
     def _by_status(self, status, post_type='post'):
-        return self.filter(status=status, post_type=post_type).select_related().prefetch_related('meta')
+        return self.filter(status=status, post_type=post_type)\
+            .select_related().prefetch_related('meta')
 
     def drafts(self, post_type='post'):
         return self._by_status('draft', post_type)
@@ -478,7 +481,6 @@ class Term(WordPressModel):
         return self.name
 
     @models.permalink
-
     def get_absolute_url(self):
         return ('wp_archive_term', (self.slug, ))
 
