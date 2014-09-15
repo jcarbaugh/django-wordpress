@@ -39,7 +39,7 @@ def _posts(parser, token, queryset):
         try:
             queryset = queryset[:int(args['count'])]
         except ValueError:
-            raise template.TemplateSyntaxError, "count argument must be an integer"
+            raise template.TemplateSyntaxError("count argument must be an integer")
 
     if args['var_name']:
         return PostsContextNode(queryset, args['var_name'])
