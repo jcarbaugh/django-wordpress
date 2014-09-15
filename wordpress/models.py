@@ -247,7 +247,7 @@ class PostManager(WordPressManager):
 
 class TermTaxonomyRelationship(WordPressModel):
 
-    object_id = models.IntegerField()
+    object = models.ForeignKey('Post')
     term_taxonomy = models.ForeignKey('Taxonomy', related_name='relationships', db_column='term_taxonomy_id')
     order = models.IntegerField(db_column='term_order')
 
@@ -298,6 +298,8 @@ class Post(WordPressModel):
     # parent = models.ForeignKey('self', related_name="children", db_column="post_parent", blank=True, null=True)
     menu_order = models.IntegerField(default=0)
     mime_type = models.CharField(max_length=100, db_column='post_mime_type')
+
+    terms = models.ManyToManyField('Taxonomy', through='TermTaxonomyRelationship', blank=True)
 
     term_cache = None
     child_cache = None
