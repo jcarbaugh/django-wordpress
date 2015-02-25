@@ -2,6 +2,7 @@ import urllib
 import warnings
 
 from django.conf import settings
+from django.db import connections
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
 from django.views import generic
@@ -137,7 +138,7 @@ class TaxonomyArchive(generic.list.ListView):
     def get_queryset(self):
         taxonomy = TAXONOMIES.get(self.kwargs['taxonomy'], None)
         if taxonomy:
-            return Post.objects.term(self.kwargs['term'], taxonomy=taxonomy).select_related()
+            return Post.objects.term(self.kwargs['term'], taxonomy=taxonomy).select_related().prefetch_related('term_taxonomies')
 
 
 class TermArchive(generic.list.ListView):

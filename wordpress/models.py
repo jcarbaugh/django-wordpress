@@ -3,7 +3,7 @@ import datetime
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
+from django.db import models, connections
 
 
 STATUS_CHOICES = (
@@ -220,10 +220,23 @@ class PostManager(WordPressManager):
         terms = terms if isinstance(terms, (list, tuple)) else [terms]
 
         try:
-            tx = Taxonomy.objects.filter(name=taxonomy, term__slug__in=terms)
-            post_ids = TermTaxonomyRelationship.objects.filter(term_taxonomy__in=tx).values_list('object_id', flat=True)
-
+            sql = """
+                SELECT sf_term_relationships.object_id
+                FROM sf_term_relationships
+                JOIN sf_term_taxonomy
+                ON sf_term_relationships.term_taxonomy_id = sf_term_taxonomy.term_taxonomy_id
+                JOIN sf_terms
+                ON sf_term_taxonomy.term_id = sf_terms.term_id
+                WHERE sf_term_taxonomy.taxonomy = %s AND sf_terms.slug in %s;
+            """
+            cursor = connections[settings.WP_DATABASE].cursor()
+            cursor.execute(sql, [taxonomy, terms])
+            post_ids = [r[0] for r in cursor.fetchall()]
             return self.published().filter(pk__in=post_ids)
+
+            # tx = Taxonomy.objects.filter(name=taxonomy, term__slug__in=terms)
+            # post_ids = TermTaxonomyRelationship.objects.filter(term_taxonomy__in=tx).values_list('object_id', flat=True)
+            # return self.published().filter(pk__in=post_ids)
         except Taxonomy.DoesNotExist:
             return self.none()
 
