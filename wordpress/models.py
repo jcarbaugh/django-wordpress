@@ -126,6 +126,8 @@ class User(WordPressModel):
     User object. Referenced by Posts, Comments, and Links
     """
 
+    id = models.AutoField(primary_key=True, db_column='ID')
+
     login = models.CharField(max_length=60, db_column='user_login')
     password = models.CharField(max_length=64, db_column='user_pass')
     username = models.CharField(max_length=255, db_column='user_nicename')
