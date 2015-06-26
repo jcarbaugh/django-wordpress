@@ -36,6 +36,11 @@ class AuthorArchive(generic.list.ListView):
     def get_context_data(self, **kwargs):
         context = super(AuthorArchive, self).get_context_data(**kwargs)
         context['author'] = self.author
+        post_list = []
+        queryset = self.queryset
+        for post in queryset:
+            post_list.append(post.get_other_details())
+        context['post_list'] = post_list
         return context
 
 
