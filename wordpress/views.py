@@ -21,7 +21,9 @@ class AuthorArchive(generic.list.ListView):
     allow_empty = True
     context_object_name = "post_list"
     paginate_by = PER_PAGE
-    template_name = "wordpress/post_archive_author.html"
+    template_name = "wordpress/post_list.html"
+    queryset = None
+    author = None
 
     def get(self, request, *args, **kwargs):
         try:
@@ -112,7 +114,7 @@ class Archive(generic.dates.ArchiveIndexView):
     allow_empty = True
     context_object_name = 'post_list'
     paginate_by = PER_PAGE
-    template_name = 'wordpress/post_archive.html'
+    template_name = 'wordpress/all_post.html'
     date_field = 'post_date'
 
     def get(self, request, *args, **kwargs):
@@ -126,6 +128,31 @@ class Archive(generic.dates.ArchiveIndexView):
 
 
 class TaxonomyArchive(generic.list.ListView):
+
+    allow_empty = True
+    context_object_name = "post_list"
+    paginate_by = PER_PAGE
+    template_name = "wordpress/post_list.html"
+    queryset = None
+
+    def get_context_data(self):
+        post_list = []
+        queryset = self.queryset
+        for post in queryset:
+            post_list.append(post.get_other_details())
+        return {"post_list": post_list}
+
+    def get_queryset(self):
+        taxonomy = TAXONOMIES.get(self.kwargs['taxonomy'], None)
+        if taxonomy:
+            queryset = Post.objects.term(self.kwargs['category_slug'], taxonomy=taxonomy).select_related()
+            if self.kwargs.get("post_slug", None):
+                queryset = queryset.filter(slug=self.kwargs["post_slug"])
+            self.queryset = queryset
+            return queryset
+
+
+class ParentTaxonomyArchive(generic.list.ListView):
 
     allow_empty = True
     context_object_name = "post_list"
