@@ -1,0 +1,31 @@
+{% for post in post_list %}
+    <h1> {{ post.post_details.title | title}} </h1>
+    <h3>Post Details</h3>
+    Id: {{ post.post_details.id }} <br/>
+    Title: {{ post.post_details.title }} <br/>
+    Author: {{ post.post_details.author }} <br/>
+    Date: {{ post.post_details.post_date }} <br/>
+    Content: {{ post.post_details.content }} <br/>
+    excerpt: {{ post.post_details.excerpt }} <br/>
+
+    <h3>Author Details</h3>
+    First Name: {{ post.author_details.first_name }} <br/>
+    Last Name: {{ post.author_details.first_name }} <br/>
+    Description: {{ post.author_details.first_name }} <br/>
+
+    {% for category in post.categories %}
+        <h3>Category Details</h3>
+        Id: {{ category.id }} <br/>
+        Name: {{ category.name }} <br/>
+        Slug: {{ category.slug }} <br/>
+    {% endfor %}
+
+    {% for tag in post.tags %}
+        <h3>Tag Details</h3>
+        Id: {{ tag.id }} <br/>
+        Name: {{ tag.name }} <br/>
+        Slug: {{ tag.slug }} <br/>
+    {% endfor %}
+
+    <br/><br/><br/>
+{% endfor %}

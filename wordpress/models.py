@@ -4,7 +4,7 @@ import datetime
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
+from django.forms import model_to_dict
 
 STATUS_CHOICES = (
     ('closed', 'closed'),

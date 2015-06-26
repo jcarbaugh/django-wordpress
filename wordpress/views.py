@@ -31,7 +31,8 @@ class AuthorArchive(generic.list.ListView):
         return super(AuthorArchive, self).get(request, *args, **kwargs)
 
     def get_queryset(self):
-        return Post.objects.published().filter(author=self.author)
+        self.queryset = Post.objects.published().filter(author=self.author)
+        return self.queryset
 
     def get_context_data(self, **kwargs):
         context = super(AuthorArchive, self).get_context_data(**kwargs)
