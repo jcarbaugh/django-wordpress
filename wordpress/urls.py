@@ -6,6 +6,13 @@ urlpatterns = patterns('wordpress.views',
     url(r'^author/(?P<username>[\w-]+)/$',
         AuthorArchive.as_view(), name='wp_author'),
 
+    url(r'^(?P<category_slug>.+)/(?P<post_slug>.+)/$',
+        TaxonomyArchive.as_view(), {'taxonomy': 'category'}, name='wp_taxonomy_category'),
+
+    url(r'^(?P<category_slug>.+)/$',
+        TaxonomyArchive.as_view(), {'taxonomy': 'category'}, name='wp_taxonomy_category'),
+
+
     url(r'^category/(?P<term>.+)/$',
         TaxonomyArchive.as_view(), {'taxonomy': 'category'}, name='wp_taxonomy_category'),
     url(r'^tag/(?P<term>.+)/$',

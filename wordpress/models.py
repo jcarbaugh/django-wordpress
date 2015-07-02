@@ -4,7 +4,7 @@ import datetime
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-
+from django.forms import model_to_dict
 
 STATUS_CHOICES = (
     ('closed', 'closed'),
@@ -394,6 +394,31 @@ class Post(WordPressModel):
 
     def tags(self):
         return self._get_terms("post_tag")
+
+    def get_other_details(self):
+        user_meta = UserMeta.objects.filter(user=self.author)
+        tags = self.tags() if self.tags() else []
+        categories = self.categories() if self.categories() else []
+        # Post Detail
+        data = {"post_details": model_to_dict(self, ["id", "author", "title", "post_date", "excerpt", "content"])}
+
+        # Author Details
+        data.update({"author_details":
+                         {"first_name": user_meta.filter(key="first_name").values_list('value', flat=True)[0],
+                          "last_name": user_meta.filter(key="last_name").values_list('value', flat=True)[0],
+                          "description": user_meta.filter(key="description").values_list('value', flat=True)[0]}
+                    })
+        # Tags Detail
+        tags_list = []
+        for tag in tags:
+            tags_list.append(model_to_dict(tag, ["id", "name", "slug"]))
+        data.update({"tags": tags_list})
+        # Categories Detail
+        categories_list = []
+        for category in categories:
+            categories_list.append(model_to_dict(category, ["id", "name", "slug"]))
+        data.update({"categories": categories_list})
+        return data
 
 
 class PostMeta(WordPressModel):
