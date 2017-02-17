@@ -429,7 +429,7 @@ class Comment(WordPressModel):
     author_name = models.CharField(max_length=255, db_column='comment_author')
     author_email = models.EmailField(max_length=100, db_column='comment_author_email')
     author_url = models.URLField(blank=True, db_column='comment_author_url')
-    author_ip = models.IPAddressField(db_column='comment_author_ip')
+    author_ip = models.GenericIPAddressField(db_column='comment_author_ip')
 
     # comment data
     post_date = models.DateTimeField(db_column='comment_date_gmt')
