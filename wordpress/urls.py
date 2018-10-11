@@ -1,7 +1,7 @@
 from django.conf.urls import *
 from wordpress.views import *
 
-urlpatterns = patterns('wordpress.views',
+urlpatterns = [
 
     url(r'^author/(?P<username>[\w-]+)/$',
         AuthorArchive.as_view(), name='wp_author'),
@@ -29,4 +29,4 @@ urlpatterns = patterns('wordpress.views',
     url(r'^$',
         Archive.as_view(), name='wp_archive_index'),
 
-)
+]
