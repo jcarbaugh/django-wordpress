@@ -146,7 +146,7 @@ class TermArchive(generic.list.ListView):
 
 #
 # *** DEPRECATED ***
-# Method-based views for compatibilty with older code.
+# Method-based views for compatibility with older code.
 #
 
 deprecation_msg = "Method-based views are deprecated and will be removed in a near-future version."
