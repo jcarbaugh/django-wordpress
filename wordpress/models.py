@@ -4,6 +4,7 @@ import datetime
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.urls import reverse
 
 
 STATUS_CHOICES = (
@@ -322,9 +323,8 @@ class Post(WordPressModel):
         self.child_cache = None
         self.term_cache = None
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('wp_object_detail', (
+        return reverse('wp_object_detail', args=(
             self.post_date.year,
             "%02i" % self.post_date.month,
             "%02i" % self.post_date.day,
@@ -484,9 +484,8 @@ class Term(WordPressModel):
     def __unicode__(self):
         return self.name
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('wp_archive_term', (self.slug, ))
+        return reverse('wp_archive_term', args=(self.slug, ))
 
 
 class Taxonomy(WordPressModel):
